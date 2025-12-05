@@ -1,0 +1,30 @@
+error_reporting = E_ALL  	Registra todos los errores y advertencias.
+error_reporting = E_ERROR 	Errores fatales que ocurren durante el inicio de PHP.
+error_reporting = E_WARNING 	Advertencias en tiempo de ejecución (errores no fatales). La ejecución del script no se detiene.
+error_reporting = E_NOTICE 	Registra avisos de tiempo de ejecución (generalmente errores en el código de tu sitio web).
+
+Además, puede excluir ciertos tipos de errores usando el operador bit a bit ~. Por ejemplo, esto mostrará todos los errores excepto advertencias NOTICE y DEPRECATED.
+
+error_reporting = E_ALL & ~E_NOTICE & ~E_DEPRECATED
+
+Configurar reportes de error en tu script
+
+Como se mencionó anteriormente, el archivo phprc controla qué errores se muestran. Como tal, las siguientes líneas no funcionarán en tu script PHP para mostrar errores:
+
+ini_set('display_errors',1);
+error_reporting(E_ALL);
+
+La única forma de mostrar errores es editar tu archivo phprc.
+Configurar un registro personalizado de errores
+
+Puedes agregar código a tu archivo phprc en el servidor para registrar todos los errores de PHP en un nuevo archivo llamado php.log.
+Decidir dónde debe ir el archivo php.log
+
+Editar el archivo phprc
+
+Agrega estas líneas a tu archivo phprc:
+
+log_errors = 1 
+error_log = /home/username/php.log
+
+Reemplaza username con tu usuario SHELL.

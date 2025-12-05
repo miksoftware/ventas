@@ -1,0 +1,10 @@
+sql_mode
+
+    Description: Sets the SQL Mode. Multiple modes can be set, separated by a comma.
+    Commandline: --sql-mode=value[,value[,value...]]
+    Scope: Global, Session
+    Dynamic: Yes
+    Data Type: string
+    Default Value:
+        STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION 
+    Valid Values: See SQL Mode for the full list. 

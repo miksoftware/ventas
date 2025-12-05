@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket de Venta</title>
+</head>
+<body>
+    <!-- Botón para abrir la vista de impresión -->
+    <button onclick="imprimirTicket()">Imprimir Ticket</button>
+
+    <!-- Contenido del ticket -->
+    <div id="ticket" style="display:none;">
+        <h1>Ticket de Venta</h1>
+        <p>Producto: Ejemplo</p>
+        <p>Cantidad: 1</p>
+        <p>Total: $10.00</p>
+    </div>
+
+    <script>
+        function imprimirTicket() {
+            // Selecciona el contenido del ticket
+            var contenido = document.getElementById('ticket').innerHTML;
+            
+            // Abre una nueva ventana
+            var ventanaImpresion = window.open('', '', 'height=600,width=400');
+            ventanaImpresion.document.write('<html><head><title>Ticket de Venta</title>');
+            ventanaImpresion.document.write('<style>/* Añade aquí los estilos del ticket */</style>');
+            ventanaImpresion.document.write('</head><body>');
+            ventanaImpresion.document.write(contenido);
+            ventanaImpresion.document.write('</body></html>');
+            
+            ventanaImpresion.document.close(); // Necesario para algunos navegadores
+            
+            // Abrir la impresión automáticamente al cargar
+            ventanaImpresion.onload = function() {
+                ventanaImpresion.print();
+            };
+            
+            // Cerrar la ventana cuando regrese el enfoque a la ventana original
+            ventanaImpresion.onfocus = function() {
+                ventanaImpresion.close();
+            };
+        }
+    </script>
+</body>
+</html>

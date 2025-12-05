@@ -1,0 +1,337 @@
+<?php
+require_once('class/class.php');
+$accesos = ['administradorS'];
+validarAccesos($accesos) or die();
+
+###################### DETALLE DE SESSION SUCURSAL ######################
+$bod         = new Login();
+$bod         = $bod->SucursalesSessionPorId();
+$simbolo     = (empty($bod) || $_SESSION["acceso"] == "administradorG" ? "" : "<strong>".$bod[0]['simbolo']."</strong>");
+###################### DETALLE DE SESSION SUCURSAL ######################
+
+$tra = new Login();
+
+if(isset($_POST["proceso"]) and $_POST["proceso"]=="save")
+{
+    $reg = $tra->RegistrarNotaCredito();
+    exit;
+} 
+?>
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="Ing. Daniel David Chavarro">
+    <!-- Favicon icon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon.png">
+    <title></title>
+
+    <!-- Menu CSS -->
+    <link href="assets/plugins/bower_components/sidebar-nav/dist/sidebar-nav.min.css" rel="stylesheet">
+    <!-- toast CSS -->
+    <link href="assets/plugins/bower_components/toast-master/css/jquery.toast.css" rel="stylesheet">
+    <!-- Sweet-Alert -->
+    <link rel="stylesheet" href="assets/css/sweetalert.css">
+    <!-- animation CSS -->
+    <link href="assets/css/animate.css" rel="stylesheet">
+    <!-- needed css -->
+    <link href="assets/css/style.css" rel="stylesheet">
+    <!-- color CSS -->
+    <link href="assets/css/default.css" id="theme" rel="stylesheet">
+    <!-- color alert -->
+    <link rel="stylesheet" type="text/css" href="assets/css/alert.css">
+    <!-- checkbox -->
+    <link rel="stylesheet" type="text/css" href="assets/css/forms/theme-checkbox-radio.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/forms/switches.css">
+    <!-- cache 
+    <script type="text/javascript" src="assets/js/cssrefresh.js"></script>-->
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+<![endif]-->
+
+</head>
+
+<body onLoad="muestraReloj()" class="fix-header">
+    
+   <!-- ============================================================== -->
+    <!-- Preloader - style you can find in spinners.css -->
+    <!-- ============================================================== -->
+    <div class="preloader">
+        <svg class="circular" viewBox="25 25 50 50">
+        <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2" stroke-miterlimit="10" />
+        </svg>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- Main wrapper - style you can find in pages.scss -->
+    <!-- ============================================================== -->
+    <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full" data-boxed-layout="full" data-boxed-layout="boxed" data-header-position="fixed" data-sidebar-position="fixed" class="mini-sidebar"> 
+          
+                    
+        <!-- INICIO DE MENU -->
+        <?php include('menu.php'); ?>
+        <!-- FIN DE MENU -->
+   
+
+        <!-- ============================================================== -->
+        <!-- Page wrapper  -->
+        <!-- ============================================================== -->
+        <div class="page-wrapper">
+            <!-- ============================================================== -->
+            <!-- Bread crumb and right sidebar toggle -->
+            <!-- ============================================================== -->
+            <div class="page-breadcrumb border-bottom">
+                <div class="row">
+                    <div class="col-lg-3 col-md-4 col-xs-12 align-self-center">
+                        <h5 class="font-medium text-uppercase mb-0"><i class="fa fa-tasks"></i> Gestión de Notas</h5>
+                    </div>
+                    <div class="col-lg-9 col-md-8 col-xs-12 align-self-center">
+                        <nav aria-label="breadcrumb" class="mt-2 float-md-right float-left">
+                            <ol class="breadcrumb mb-0 justify-content-end p-0">
+                                <li class="breadcrumb-item">Nota de Crédito</li>
+                                <li class="breadcrumb-item active" aria-current="page">Gestión de Notas</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            <!-- ============================================================== -->
+            <!-- End Bread crumb and right sidebar toggle -->
+            <!-- ============================================================== -->
+            <!-- ============================================================== -->
+            <!-- Container fluid  -->
+            <!-- ============================================================== -->
+            <div class="page-content container-fluid">
+                <!-- ============================================================== -->
+                <!-- Start Page Content -->
+                <!-- ============================================================== -->
+               
+
+
+<form class="form form-material" method="post" action="#" name="savenota" id="savenota">
+
+        <div id="save">
+        <!-- error will be shown here ! -->
+        </div>
+
+<!-- Row -->
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header bg-danger">
+                <h4 class="card-title text-white"><i class="fa fa-tasks"></i> Gestión de Notas</h4>
+            </div>
+
+            <div class="form-body">
+
+            <div class="card-body">
+
+        <div class="row">
+            <div class="col-md-2">
+                <div class="form-group has-feedback">
+                    <label class="control-label">Tipo de Documento: <span class="symbol required"></span></label>
+                    <div class="n-chk">
+                        <?php if($bod[0]['ticket_general'] == 8){ ?>
+                        <label class="new-control new-checkbox new-checkbox-rounded checkbox-primary">
+                          <input type="radio" class="new-control-input" name="tipodocumento" id="ticket1" value="TICKET_NOTACREDITO_8" checked="checked">
+                          <span class="new-control-indicator"></span>TICKET (80MM)
+                        </label>
+                        <?php } else { ?>
+                        <label class="new-control new-checkbox new-checkbox-rounded checkbox-primary">
+                          <input type="radio" class="new-control-input" name="tipodocumento" id="ticket2" value="TICKET_NOTACREDITO_5" checked="checked">
+                          <span class="new-control-indicator"></span>TICKET (58MM)
+                        </label>
+                        <?php } ?>
+                    </div>
+
+                    <div class="n-chk">
+                        <label class="new-control new-checkbox new-checkbox-rounded checkbox-primary">
+                          <input type="radio" class="new-control-input" name="tipodocumento" id="factura" value="FACTURA_NOTACREDITO_A4">
+                          <span class="new-control-indicator"></span>FACTURA
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group has-feedback">
+                    <label class="control-label">Ingrese Nº de Documento: <span class="symbol required"></span></label>
+                    <input type="hidden" name="idventa" id="idventa">
+                    <input type="hidden" name="codventa" id="codventa">
+                    <input type="hidden" name="codfactura" id="codfactura">
+                    <input type="hidden" name="proceso" id="proceso" value="save"/>
+                    <input type="hidden" name="codsucursal" id="codsucursal" value="<?php echo encrypt($_SESSION["codsucursal"]); ?>">
+                    <input style="color:#000;font-weight:bold;" type="text" class="form-control" name="numfactura" id="numfactura" onKeyUp="this.value=this.value.toUpperCase();" placeholder="Realice la Búsqueda por Nº de Documento" autocomplete="off" required="" aria-required="true"/> 
+                    <i class="fa fa-search form-control-feedback"></i> 
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group has-feedback">
+                    <label class="control-label">Fecha de Nota: <span class="symbol required"></span></label>
+                    <input style="color:#000;font-weight:bold;" type="text" class="form-control calendario" name="fechanota" id="fechanota" onKeyUp="this.value=this.value.toUpperCase();" placeholder="Ingrese Fecha de Nota" autocomplete="off" value="<?php echo date('d-m-Y'); ?>" required="" aria-required="true"/> 
+                    <i class="fa fa-calendar form-control-feedback"></i> 
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-2">
+                <div class="form-group has-feedback">
+                    <label class="control-label">Descontar en Caja: <span class="symbol required"></span></label>
+                    <div class="n-chk">
+                        <label class="new-control new-checkbox new-checkbox-rounded checkbox-primary">
+                          <input type="radio" class="new-control-input" name="descontar" id="name1" value="1" checked="checked" onClick="VerificaDescuentoCaja()">
+                          <span class="new-control-indicator"></span>SI
+                        </label>
+                    </div>
+
+                    <div class="n-chk">
+                        <label class="new-control new-checkbox new-checkbox-rounded checkbox-primary">
+                          <input type="radio" class="new-control-input" name="descontar" id="name2" value="2" onClick="VerificaDescuentoCaja()">
+                          <span class="new-control-indicator"></span>NO
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group has-feedback">
+                    <label class="control-label">Seleccione Caja: <span class="symbol required"></span></label>
+                    <i class="fa fa-bars form-control-feedback"></i>
+                    <select style="color:#000;font-weight:bold;" name="codarqueo" id="codarqueo" class='form-control' required="" aria-required="true">
+                    <option value=""> -- SELECCIONE -- </option>
+                    <?php
+                    $caja = new Login();
+                    $caja = $caja->ListarCajasAbiertas();
+                    if($caja==""){ 
+                        echo "";
+                    } else {
+                    for($i=0;$i<sizeof($caja);$i++){
+                    ?>
+                    <option value="<?php echo encrypt($caja[$i]['codarqueo']); ?>"><?php echo $caja[$i]['nrocaja'].": ".$caja[$i]['nomcaja']." - ".$caja[$i]['nombres']; ?></option>         
+                    <?php } } ?>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-6"> 
+                <div class="form-group has-feedback2"> 
+                   <label class="control-label">Motivo de Nota: <span class="symbol required"></span></label> 
+                   <textarea class="form-control" type="text" name="observaciones" id="observaciones" onKeyUp="this.value=this.value.toUpperCase();" autocomplete="off" placeholder="Ingrese Motivo de Nota" rows="1"></textarea>
+                   <i class="fa fa-comment-o form-control-feedback2"></i> 
+                </div> 
+            </div>
+        </div>
+
+                    <div class="text-right">
+                        <button type="button" id="BotonBusqueda" onClick="BuscarFactura()" class="btn btn-dark"><span class="fa fa-search"></span> Realizar Búsqueda</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Row -->
+
+<div id="muestrafactura"></div>
+
+
+</form>
+                <!-- ============================================================== -->
+                <!-- End PAge Content -->
+                <!-- ============================================================== -->
+                <!-- ============================================================== -->
+                <!-- Right sidebar -->
+                <!-- ============================================================== -->
+                <!-- .right-sidebar -->
+                <!-- ============================================================== -->
+                <!-- End Right sidebar -->
+                <!-- ============================================================== -->
+            </div>
+            <!-- ============================================================== -->
+            <!-- End Container fluid  -->
+            <!-- ============================================================== -->
+            <!-- ============================================================== -->
+            <!-- footer -->
+            <!-- ============================================================== -->
+            <footer class="footer text-center">
+                <i class="fa fa-copyright"></i> <span class="current-year"></span>.
+            </footer>
+            <!-- ============================================================== -->
+            <!-- End footer -->
+            <!-- ============================================================== -->
+        </div>
+        <!-- ============================================================== -->
+        <!-- End Page wrapper  -->
+        <!-- ============================================================== -->
+    </div>
+    <!-- ============================================================== -->
+    <!-- End Wrapper -->
+    <!-- ============================================================== -->
+   
+
+    <!-- ============================================================== -->
+    <!-- All Jquery -->
+    <!-- ============================================================== -->
+    <script src="assets/script/jquery.min.js"></script> 
+    <script src="assets/js/bootstrap.js"></script>
+    <!-- apps -->
+    <script src="assets/js/app.min.js"></script>
+    <script src="assets/js/app.init.horizontal-fullwidth.js"></script>
+    <script src="assets/js/app-style-switcher.js"></script>
+    <!-- slimscrollbar scrollbar JavaScript -->
+    <script src="assets/js/perfect-scrollbar.js"></script>
+    <script src="assets/js/sparkline.js"></script>
+    <!--Wave Effects -->
+    <script src="assets/js/waves.js"></script>
+    <!-- Sweet-Alert -->
+    <script src="assets/js/sweetalert-dev.js"></script>
+    <!--Menu sidebar -->
+    <script src="assets/js/sidebarmenu.js"></script>
+    <!--Custom JavaScript -->
+    <script src="assets/js/custom.js"></script>
+
+    <!-- script jquery -->
+    <script type="text/javascript" src="assets/script/titulos.js"></script>
+    <script type="text/javascript" src="assets/script/script2.js"></script>
+    <script type="text/javascript" src="assets/script/VentanaCentrada.js"></script>
+    <script type="text/javascript" src="assets/script/validation.min.js"></script>
+    <script type="text/javascript" src="assets/script/script.js"></script>
+    <!-- script jquery -->
+
+    <!-- Calendario -->
+    <link rel="stylesheet" href="assets/calendario/jquery-ui.css" />
+    <script src="assets/calendario/jquery-ui.js"></script>
+    <script src="assets/script/jscalendario.js"></script>
+    <script src="assets/script/autocompleto.js"></script>
+    <!-- Calendario -->
+
+    <!-- jQuery -->
+    <script src="assets/plugins/noty/packaged/jquery.noty.packaged.min.js"></script>
+    <script src="assets/plugins/noty/themes/relax.js"></script>
+    <script type="text/javascript">
+    $(document).ready(function(){
+        $(document).keypress(function(e) {        
+            var keycode = (e.keyCode ? e.keyCode : e.which);
+            if (keycode == '13') {
+            $("#BotonBusqueda").trigger("click");
+            return false;
+            }
+        });                    
+    });    
+    </script>
+    <!-- jQuery -->
+    
+</body>
+</html>
