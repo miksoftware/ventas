@@ -33,6 +33,82 @@ public function __construct()
 	parent::__construct();
 } 	
 
+###################### FUNCION PARA CALCULAR EXISTENCIA VIRTUAL DE PRODUCTOS HIJO ####################
+/**
+ * Calcula la existencia disponible considerando productos compuestos
+ * Para productos HIJO: existencia = stock_padre / cantidad_conversion
+ * Para productos SIMPLE/PADRE: existencia = stock propio
+ * 
+ * @param array $producto - Array con datos del producto
+ * @return float - Existencia disponible (virtual para HIJO, real para otros)
+ */
+public function CalcularExistenciaVirtual($producto)
+{
+	$tipoProducto = isset($producto['tipo_producto']) ? $producto['tipo_producto'] : 'SIMPLE';
+	
+	if ($tipoProducto == 'HIJO' && isset($producto['producto_padre_id']) && $producto['producto_padre_id'] > 0) {
+		// Producto HIJO: calcular existencia virtual basada en el padre
+		$cantidadConversion = isset($producto['cantidad_conversion']) ? floatval($producto['cantidad_conversion']) : 1;
+		
+		if ($cantidadConversion > 0) {
+			// Obtener existencia del padre
+			$sql = "SELECT existencia FROM productos WHERE idproducto = ?";
+			$stmt = $this->dbh->prepare($sql);
+			$stmt->execute(array($producto['producto_padre_id']));
+			$padre = $stmt->fetch(PDO::FETCH_ASSOC);
+			
+			if ($padre) {
+				$existenciaPadre = floatval($padre['existencia']);
+				// Existencia virtual = cuántos "hijos" se pueden formar con el stock del padre
+				return floor($existenciaPadre / $cantidadConversion);
+			}
+		}
+		return 0;
+	}
+	
+	// Producto SIMPLE o PADRE: retornar existencia directa
+	return isset($producto['existencia']) ? floatval($producto['existencia']) : 0;
+}
+
+/**
+ * Obtiene la existencia virtual de un producto por su ID
+ * @param int $idproducto
+ * @param int $codsucursal
+ * @return float
+ */
+public function ObtenerExistenciaProducto($idproducto, $codsucursal)
+{
+	self::SetNames();
+	$sql = "SELECT 
+		productos.existencia,
+		productos.tipo_producto,
+		productos.producto_padre_id,
+		productos.cantidad_conversion,
+		producto_padre.existencia AS padre_existencia
+	FROM productos 
+	LEFT JOIN productos AS producto_padre ON productos.producto_padre_id = producto_padre.idproducto
+	WHERE productos.idproducto = ? AND productos.codsucursal = ?";
+	
+	$stmt = $this->dbh->prepare($sql);
+	$stmt->execute(array($idproducto, $codsucursal));
+	$row = $stmt->fetch(PDO::FETCH_ASSOC);
+	
+	if (!$row) return 0;
+	
+	$tipoProducto = isset($row['tipo_producto']) ? $row['tipo_producto'] : 'SIMPLE';
+	
+	if ($tipoProducto == 'HIJO' && isset($row['producto_padre_id'])) {
+		$cantidadConversion = isset($row['cantidad_conversion']) ? floatval($row['cantidad_conversion']) : 1;
+		if ($cantidadConversion > 0 && isset($row['padre_existencia'])) {
+			return floor(floatval($row['padre_existencia']) / $cantidadConversion);
+		}
+		return 0;
+	}
+	
+	return floatval($row['existencia']);
+}
+###################### FIN FUNCION CALCULAR EXISTENCIA VIRTUAL ####################
+
 
 ###################### FUNCION PARA EXPIRAR SESSION POR INACTIVIDAD ####################
 public function ExpiraSession()
@@ -8943,7 +9019,7 @@ public function RegistrarProductos()
 	if($num == 0)
 	{
 	    ##################### REGISTRO DE PRODUCTO #####################
-	    $query = "INSERT INTO productos values (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+	    $query = "INSERT INTO productos values (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
     	$stmt = $this->dbh->prepare($query);
     	$stmt->bindParam(1, $codproducto);
     	$stmt->bindParam(2, $producto);
@@ -8981,6 +9057,9 @@ public function RegistrarProductos()
     	$stmt->bindParam(34, $stockteorico);
     	$stmt->bindParam(35, $motivoajuste);
     	$stmt->bindParam(36, $codsucursal);
+    	$stmt->bindParam(37, $tipo_producto);
+    	// producto_padre_id se bindea después de asignar su valor para manejar NULL correctamente
+    	$stmt->bindParam(39, $cantidad_conversion);
 
 		$codproducto      = limpiar($_POST["codproducto"]);
 		$producto         = limpiar($_POST["producto"]);
@@ -9037,10 +9116,31 @@ public function RegistrarProductos()
 		$stockteorico     = limpiar("0");
 		$motivoajuste     = limpiar("NINGUNO");
 		$codsucursal      = decrypt($_POST["codsucursal"]);
+		
+		// Campos para productos compuestos
+		$tipo_producto    = limpiar(isset($_POST["tipo_producto"]) ? $_POST["tipo_producto"] : "SIMPLE");
+		// Para producto_padre_id: si es HIJO y tiene valor, usar el ID; si no, usar NULL
+		$producto_padre_id = ($tipo_producto == "HIJO" && !empty($_POST["producto_padre_id"])) ? limpiar(decrypt($_POST["producto_padre_id"])) : null;
+		$cantidad_conversion = limpiar($tipo_producto == "HIJO" ? $_POST["cantidad_conversion"] : "1.00");
+		
+		// Bindear producto_padre_id con el tipo correcto (NULL o INT)
+		if ($producto_padre_id === null) {
+			$stmt->bindValue(38, null, PDO::PARAM_NULL);
+		} else {
+			$stmt->bindValue(38, $producto_padre_id, PDO::PARAM_INT);
+		}
+		
+		// Si es producto HIJO, forzar existencia a 0
+		if ($tipo_producto == "HIJO") {
+			$existencia = "0.00";
+		}
+		
 		$stmt->execute();
 		##################### REGISTRO DE PRODUCTO #####################
 
 		##################### REGISTRAMOS DATOS DE PRODUCTOS EN KARDEX #####################
+		// Solo registrar kardex si NO es producto HIJO (los hijos no manejan stock)
+		if ($tipo_producto != "HIJO") {
 		$query = "INSERT INTO kardex values (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 		$stmt = $this->dbh->prepare($query);
 		$stmt->bindParam(1, $codproceso);
@@ -9079,6 +9179,7 @@ public function RegistrarProductos()
 		$codsucursal    = decrypt($_POST["codsucursal"]);
     	$codigo         = limpiar($_SESSION["codigo"]);
 		$stmt->execute();
+		} // Fin del IF - Solo registrar kardex si NO es producto HIJO
 		##################### REGISTRAMOS DATOS DE PRODUCTOS EN KARDEX #####################
 
 		############################## SUBIR FOTO DE PRODUCTO ##############################
@@ -10958,7 +11059,11 @@ public function ListarProductosModal()
 	productos.precioxmayor,
 	productos.precioxmenor,
 	productos.precioxpublico,
-	productos.existencia,
+	CASE 
+	    WHEN productos.tipo_producto = 'HIJO' AND productos.producto_padre_id IS NOT NULL 
+	    THEN FLOOR(IFNULL(padre.existencia, 0) / IFNULL(productos.cantidad_conversion, 1))
+	    ELSE productos.existencia 
+	END AS existencia,
 	productos.stockoptimo,
 	productos.stockmedio,
 	productos.stockminimo,
@@ -10970,6 +11075,9 @@ public function ListarProductosModal()
 	productos.fechaminimo,
 	productos.codigobarra,
 	productos.codsucursal,
+	productos.tipo_producto,
+	productos.producto_padre_id,
+	productos.cantidad_conversion,
 	impuestos.codimpuesto,
 	impuestos.nomimpuesto,
 	impuestos.valorimpuesto,
@@ -10991,8 +11099,12 @@ public function ListarProductosModal()
     LEFT JOIN modelos ON productos.codmodelo = modelos.codmodelo
     LEFT JOIN presentaciones ON productos.codpresentacion = presentaciones.codpresentacion 
     LEFT JOIN colores ON productos.codcolor = colores.codcolor
+    LEFT JOIN productos AS padre ON productos.producto_padre_id = padre.idproducto
     WHERE productos.codsucursal = '".limpiar($_SESSION["codsucursal"])."'
-    AND productos.existencia != 0.00";
+    AND (
+        productos.existencia != 0.00 
+        OR (productos.tipo_producto = 'HIJO' AND productos.producto_padre_id IS NOT NULL AND padre.existencia > 0)
+    )";
 	foreach ($this->dbh->query($sql) as $row)
 	{
 		$this->p[] = $row;
@@ -11058,6 +11170,49 @@ public function ListarCodigoBarra()
 }
 ############################ FUNCION LISTAR CODIGO DE BARRAS #########################
 
+############################ FUNCION BUSCAR PRODUCTOS PADRE #################################
+public function BuscarProductosPadre($codsucursal, $busqueda = '')
+{
+	self::SetNames();
+	
+	$sql = "SELECT 
+		idproducto,
+		codproducto,
+		producto,
+		tipo_producto,
+		existencia,
+		precioxpublico
+	FROM productos 
+	WHERE codsucursal = :codsucursal
+	AND tipo_producto = 'PADRE'";
+	
+	if (!empty($busqueda)) {
+		$sql .= " AND (producto LIKE :busqueda OR codproducto LIKE :busqueda2)";
+	}
+	
+	$sql .= " ORDER BY producto ASC LIMIT 50";
+	
+	$stmt = $this->dbh->prepare($sql);
+	$stmt->bindParam(':codsucursal', $codsucursal, PDO::PARAM_INT);
+	
+	if (!empty($busqueda)) {
+		$busquedaLike = "%$busqueda%";
+		$stmt->bindParam(':busqueda', $busquedaLike, PDO::PARAM_STR);
+		$stmt->bindParam(':busqueda2', $busquedaLike, PDO::PARAM_STR);
+	}
+	
+	$stmt->execute();
+	$resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	
+	// Encriptar el idproducto para uso seguro en el frontend
+	foreach ($resultados as &$row) {
+		$row['idproducto'] = encrypt($row['idproducto']);
+	}
+	
+	return $resultados;
+}
+############################ FIN FUNCION BUSCAR PRODUCTOS PADRE #########################
+
 ############################ FUNCION ID PRODUCTOS #################################
 public function ProductosPorId()
 {
@@ -11100,6 +11255,12 @@ public function ProductosPorId()
 	productos.stockteorico,
 	productos.motivoajuste,
 	productos.codsucursal,
+	productos.tipo_producto,
+	productos.producto_padre_id,
+	productos.cantidad_conversion,
+	producto_padre.codproducto AS codproducto_padre,
+	producto_padre.producto AS producto_padre_nombre,
+	CONCAT(producto_padre.codproducto, ' - ', producto_padre.producto) AS producto_padre_nombre,
 	impuestos.codimpuesto,
 	impuestos.nomimpuesto,
 	impuestos.valorimpuesto,
@@ -11133,6 +11294,7 @@ public function ProductosPorId()
 	provincias.provincia,
 	departamentos.departamento
 	FROM(productos LEFT JOIN sucursales ON productos.codsucursal = sucursales.codsucursal)
+	LEFT JOIN productos AS producto_padre ON productos.producto_padre_id = producto_padre.idproducto
 	LEFT JOIN impuestos ON productos.ivaproducto = impuestos.codimpuesto
     LEFT JOIN familias ON productos.codfamilia=familias.codfamilia 
 	LEFT JOIN subfamilias ON productos.codsubfamilia=subfamilias.codsubfamilia 
@@ -11441,7 +11603,10 @@ public function ActualizarProductos()
 		." fechaoptimo = ?, "
 		." fechamedio = ?, "
 		." fechaminimo = ?, "
-		." codproveedor = ? "
+		." codproveedor = ?, "
+		." tipo_producto = ?, "
+		." producto_padre_id = ?, "
+		." cantidad_conversion = ? "
 		." WHERE "
 		." idproducto = ?;
 		";
@@ -11478,7 +11643,10 @@ public function ActualizarProductos()
 		$stmt->bindParam(30, $fechamedio);
 		$stmt->bindParam(31, $fechaminimo);
 		$stmt->bindParam(32, $codproveedor);
-		$stmt->bindParam(33, $idproducto);
+		$stmt->bindParam(33, $tipo_producto);
+		// producto_padre_id se bindea después de asignar su valor para manejar NULL correctamente
+		$stmt->bindParam(35, $cantidad_conversion);
+		$stmt->bindParam(36, $idproducto);
 
 		$producto         = limpiar($_POST["producto"]);
 		$descripcion      = limpiar($_POST["descripcion"]);
@@ -11500,7 +11668,23 @@ public function ActualizarProductos()
 		$precioxmayor     = limpiar($_POST["precioxmayor"]);
 		$precioxmenor     = limpiar($_POST["precioxmenor"]);
 		$precioxpublico   = limpiar($_POST["precioxpublico"]);
-		$existencia       = limpiar($_POST["existencia"]);
+		
+		// Campos para productos compuestos
+		$tipo_producto    = limpiar(isset($_POST["tipo_producto"]) ? $_POST["tipo_producto"] : "SIMPLE");
+		// Para producto_padre_id: si es HIJO y tiene valor, usar el ID; si no, usar NULL
+		$producto_padre_id = ($tipo_producto == "HIJO" && !empty($_POST["producto_padre_id"])) ? limpiar(decrypt($_POST["producto_padre_id"])) : null;
+		$cantidad_conversion = limpiar($tipo_producto == "HIJO" ? $_POST["cantidad_conversion"] : "1.00");
+		
+		// Bindear producto_padre_id con el tipo correcto (NULL o INT)
+		if ($producto_padre_id === null) {
+			$stmt->bindValue(34, null, PDO::PARAM_NULL);
+		} else {
+			$stmt->bindValue(34, $producto_padre_id, PDO::PARAM_INT);
+		}
+		
+		// Si es producto HIJO, forzar existencia a 0
+		$existencia       = limpiar($tipo_producto == "HIJO" ? "0.00" : $_POST["existencia"]);
+		
 		$stockoptimo      = limpiar($_POST["stockoptimo"]);
 		$stockmedio       = limpiar($_POST["stockmedio"]);
 		$stockminimo      = limpiar($_POST["stockminimo"]);
@@ -11518,7 +11702,8 @@ public function ActualizarProductos()
 		$stmt->execute();
 		##################### ACTUALIZO LOS DATOS DE PRODUCTOS #####################
 
-	if($_POST['existencia'] != $_POST['existencia2']){
+	// Solo registrar kardex si NO es producto HIJO y si cambió la existencia
+	if($tipo_producto != "HIJO" && $_POST['existencia'] != $_POST['existencia2']){
 
 		##################### REGISTRAMOS LOS DATOS DE PRODUCTOS EN KARDEX #####################
 		$query = "INSERT INTO kardex values (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
@@ -13288,6 +13473,17 @@ public function RegistrarAjusteProducto()
 		echo "2";
 		exit();
 	}
+
+	############ VALIDO QUE NO SEA PRODUCTO HIJO #############
+	$sqlTipo = "SELECT tipo_producto FROM productos WHERE idproducto = '".limpiar(decrypt($_POST['idproducto']))."'";
+	$stmtTipo = $this->dbh->prepare($sqlTipo);
+	$stmtTipo->execute();
+	$rowTipo = $stmtTipo->fetch(PDO::FETCH_ASSOC);
+	if ($rowTipo && $rowTipo['tipo_producto'] == 'HIJO') {
+		echo "8"; // Código de error: Producto HIJO no puede recibir ajustes
+		exit;
+	}
+	############ FIN VALIDACION PRODUCTOS HIJO #############
 
 	################ OBTENGO EXISTENCIA DE PRODUCTO ################
 	$sql = "SELECT
@@ -15891,8 +16087,24 @@ public function RegistrarTraspasos()
 		echo "2";
 		exit;
 	}
-	############ VALIDO SI LA CANTIDAD ES MAYOR QUE LA EXISTENCIA #############
+
+	############ VALIDO QUE NO SE INCLUYAN PRODUCTOS HIJO EN TRASPASOS #############
 	$v = $_SESSION["CarritoTraspaso"];
+	for($i=0;$i<count($v);$i++){
+		$sqlTipo = "SELECT tipo_producto FROM productos 
+		WHERE idproducto = '".limpiar($v[$i]['id'])."' 
+		AND codsucursal = '".limpiar(decrypt($_POST["sucursal_envia"]))."'";
+		$stmtTipo = $this->dbh->prepare($sqlTipo);
+		$stmtTipo->execute();
+		$rowTipo = $stmtTipo->fetch(PDO::FETCH_ASSOC);
+		if ($rowTipo && $rowTipo['tipo_producto'] == 'HIJO') {
+			echo "7"; // Código de error: Producto HIJO no puede ser traspasado
+			exit;
+		}
+	}
+	############ FIN VALIDACION PRODUCTOS HIJO #############
+
+	############ VALIDO SI LA CANTIDAD ES MAYOR QUE LA EXISTENCIA #############
 	for($i=0;$i<count($v);$i++){
 
 	    $sql = "SELECT existencia FROM productos 
@@ -18291,6 +18503,22 @@ public function RegistrarCompras()
 		echo "2";
 		exit;
 	}
+
+	############ VALIDO QUE NO SE INCLUYAN PRODUCTOS HIJO EN COMPRAS #############
+	$c = $_SESSION["CarritoCompra"];
+    for ($i = 0, $iMax = count($c); $i < $iMax; $i++) {
+		$sql = "SELECT tipo_producto FROM productos 
+		WHERE idproducto = '".limpiar($c[$i]['id'])."' 
+		AND codsucursal = '".limpiar(decrypt($_POST['codsucursal']))."'";
+		$stmt = $this->dbh->prepare($sql);
+		$stmt->execute();
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+		if ($row && $row['tipo_producto'] == 'HIJO') {
+			echo "16"; // Código de error: Producto HIJO no puede recibir compras
+			exit;
+		}
+	}
+	############ FIN VALIDACION PRODUCTOS HIJO #############
 
 	if (limpiar($_POST["tipocompra"]) == "CREDITO") { 
 
@@ -33746,24 +33974,44 @@ public function RegistrarVentas()
 
 		if(limpiar($v[$i]['tipodetalle'])==1){
 
+			// Obtengo datos del producto incluyendo info del padre si es HIJO
 			$sql = "SELECT 
-			existencia 
+			productos.existencia,
+			productos.tipo_producto,
+			productos.producto_padre_id,
+			productos.cantidad_conversion,
+			producto_padre.existencia AS padre_existencia
 			FROM productos 
-			WHERE idproducto = '".limpiar($v[$i]['id'])."' 
-			AND codproducto = '".limpiar($v[$i]['txtCodigo'])."' 
-			AND codsucursal = '".limpiar(decrypt($_POST['codsucursal']))."'";
+			LEFT JOIN productos AS producto_padre ON productos.producto_padre_id = producto_padre.idproducto
+			WHERE productos.idproducto = '".limpiar($v[$i]['id'])."' 
+			AND productos.codproducto = '".limpiar($v[$i]['txtCodigo'])."' 
+			AND productos.codsucursal = '".limpiar(decrypt($_POST['codsucursal']))."'";
 			foreach ($this->dbh->query($sql) as $row)
 			{
 				$this->p[] = $row;
 			}
 			
 			$existenciaBD = $row['existencia'];
+			$tipoProducto = isset($row['tipo_producto']) ? $row['tipo_producto'] : 'SIMPLE';
+			$cantidadConversion = isset($row['cantidad_conversion']) ? $row['cantidad_conversion'] : 1;
+			$padreExistencia = isset($row['padre_existencia']) ? $row['padre_existencia'] : 0;
 			$cantidad     = $v[$i]['cantidad'];
 
-			if ($cantidad > $existenciaBD) 
-			{ 
-				echo "4";
-				exit;
+			// Si es producto HIJO, validamos contra el stock del PADRE
+			if ($tipoProducto == 'HIJO' && $row['producto_padre_id']) {
+				$cantidadRequerida = $cantidad * $cantidadConversion;
+				if ($cantidadRequerida > $padreExistencia) 
+				{ 
+					echo "4"; // Existencia insuficiente
+					exit;
+				}
+			} else {
+				// Producto SIMPLE o PADRE: validación normal
+				if ($cantidad > $existenciaBD) 
+				{ 
+					echo "4";
+					exit;
+				}
 			}
 
 		} elseif(limpiar($v[$i]['tipodetalle']) == 2){ // SI EL DETALLE ES UN COMBO
@@ -34291,33 +34539,72 @@ public function RegistrarVentas()
 	if(limpiar($detalle[$i]['tipodetalle'])==1){ // SI EL DETALLE ES UN PRODUCTO
 
 		################ VERIFICO LA EXISTENCIA DEL PRODUCTO EN ALMACEN ################
-		$sql = "SELECT * FROM productos 
-		WHERE idproducto = '".limpiar($detalle[$i]['id'])."'
-		AND codproducto = '".limpiar($detalle[$i]['txtCodigo'])."'
-		AND codsucursal = '".limpiar(decrypt($_POST['codsucursal']))."'";
+		$sql = "SELECT productos.*, 
+		producto_padre.idproducto AS padre_idproducto,
+		producto_padre.codproducto AS padre_codproducto,
+		producto_padre.existencia AS padre_existencia
+		FROM productos 
+		LEFT JOIN productos AS producto_padre ON productos.producto_padre_id = producto_padre.idproducto
+		WHERE productos.idproducto = '".limpiar($detalle[$i]['id'])."'
+		AND productos.codproducto = '".limpiar($detalle[$i]['txtCodigo'])."'
+		AND productos.codsucursal = '".limpiar(decrypt($_POST['codsucursal']))."'";
 		foreach ($this->dbh->query($sql) as $row)
 		{
 			$this->p[] = $row;
 		}
 		$existenciaBD = $row['existencia'];
+		$tipoProductoBD = isset($row['tipo_producto']) ? $row['tipo_producto'] : 'SIMPLE';
+		$cantidadConversionBD = isset($row['cantidad_conversion']) ? $row['cantidad_conversion'] : 1;
+		$padreIdProductoBD = isset($row['padre_idproducto']) ? $row['padre_idproducto'] : null;
+		$padreCodProductoBD = isset($row['padre_codproducto']) ? $row['padre_codproducto'] : null;
+		$padreExistenciaBD = isset($row['padre_existencia']) ? $row['padre_existencia'] : 0;
 	    ################ VERIFICO LA EXISTENCIA DEL PRODUCTO EN ALMACEN ################
 
 		##################### ACTUALIZO LA EXISTENCIA DEL ALMACEN ####################
-		$sql = "UPDATE productos set "
-		." existencia = ? "
-		." WHERE "
-		." idproducto = '".limpiar($detalle[$i]['id'])."'
-		AND codproducto = '".limpiar($detalle[$i]['txtCodigo'])."' 
-		AND codsucursal = '".limpiar(decrypt($_POST['codsucursal']))."';
-		";
-		$stmt = $this->dbh->prepare($sql);
-		$stmt->bindParam(1, $existencia);
-		$cantidad   = limpiar($detalle[$i]['cantidad']);
-		$existencia = number_format($existenciaBD-$cantidad, 2, '.', '');
-		$stmt->execute();
+		// Si es producto HIJO, descontamos del PADRE
+		if ($tipoProductoBD == 'HIJO' && $padreIdProductoBD) {
+			$cantidadDescontar = number_format($detalle[$i]['cantidad'] * $cantidadConversionBD, 2, '.', '');
+			$sql = "UPDATE productos set "
+			." existencia = ? "
+			." WHERE "
+			." idproducto = '".limpiar($padreIdProductoBD)."'
+			AND codsucursal = '".limpiar(decrypt($_POST['codsucursal']))."';
+			";
+			$stmt = $this->dbh->prepare($sql);
+			$stmt->bindParam(1, $existencia);
+			$existencia = number_format($padreExistenciaBD - $cantidadDescontar, 2, '.', '');
+			$stmt->execute();
+			
+			// Variables para el kardex (registramos en el PADRE)
+			$codproductoKardex = $padreCodProductoBD;
+			$stockactualKardex = $existencia;
+			$salidasKardex = $cantidadDescontar;
+			$documentoKardex = "VENTA: ".$codfactura." (HIJO: ".$detalle[$i]['txtCodigo']." x ".$detalle[$i]['cantidad'].")";
+		} else {
+			// Producto SIMPLE o PADRE: descuento normal
+			$sql = "UPDATE productos set "
+			." existencia = ? "
+			." WHERE "
+			." idproducto = '".limpiar($detalle[$i]['id'])."'
+			AND codproducto = '".limpiar($detalle[$i]['txtCodigo'])."' 
+			AND codsucursal = '".limpiar(decrypt($_POST['codsucursal']))."';
+			";
+			$stmt = $this->dbh->prepare($sql);
+			$stmt->bindParam(1, $existencia);
+			$cantidad   = limpiar($detalle[$i]['cantidad']);
+			$existencia = number_format($existenciaBD-$cantidad, 2, '.', '');
+			$stmt->execute();
+			
+			// Variables para el kardex
+			$codproductoKardex = $detalle[$i]['txtCodigo'];
+			$stockactualKardex = $existencia;
+			$salidasKardex = number_format($detalle[$i]['cantidad'], 2, '.', '');
+			$documentoKardex = "VENTA: ".$codfactura;
+		}
 	    ##################### ACTUALIZO LA EXISTENCIA DEL ALMACEN ####################
 
 	    ############### REGISTRAMOS LOS DATOS DE PRODUCTOS EN KARDEX ###############
+	    // Registramos el kardex en el producto que maneja el stock (PADRE si es HIJO, o el mismo si es SIMPLE/PADRE)
 	    $query = "INSERT INTO kardex values (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 		$stmt = $this->dbh->prepare($query);
 		$stmt->bindParam(1, $codventa);
@@ -34338,16 +34625,16 @@ public function RegistrarVentas()
 		$stmt->bindParam(16, $codsucursal);
 		$stmt->bindParam(17, $codigo);
 
-		$codproducto   = limpiar($detalle[$i]['txtCodigo']);
+		$codproducto   = limpiar($codproductoKardex);
 		$movimiento    = limpiar("SALIDAS");
 		$entradas      = limpiar("0.00");
-		$salidas       = number_format($detalle[$i]['cantidad'], 2, '.', '');
+		$salidas       = $salidasKardex;
 		$devolucion    = limpiar("0.00");
-		$stockactual   = number_format($existenciaBD - $detalle[$i]['cantidad'], 2, '.', '');
+		$stockactual   = $stockactualKardex;
 		$ivaproducto   = limpiar($detalle[$i]['ivaproducto'] == "0" ? "EXENTO" : $detalle[$i]['tipoimpuesto']." (".$detalle[$i]['ivaproducto']." %)");
 		$descproducto  = number_format($detalle[$i]['descproducto'], 2, '.', '');
 		$precio        = number_format($detalle[$i]["precio2"], 2, '.', '');
-		$documento     = limpiar("VENTA: ".$codfactura);
+		$documento     = limpiar($documentoKardex);
 		$fechakardex   = limpiar(date("Y-m-d H:i:s"));
 	    $tipokardex    = limpiar($detalle[$i]['tipodetalle']);
 	    $procedimiento = limpiar("1");

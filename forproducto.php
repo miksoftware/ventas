@@ -229,6 +229,46 @@ elseif(isset($_POST["proceso"]) and $_POST["proceso"]=="update")
             </div>
         </div>
 
+        <!-- SECCION PRODUCTOS COMPUESTOS -->
+        <div class="row" style="background-color: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #dc3545;">
+            <div class="col-md-12">
+                <h5 style="color: #dc3545; margin-bottom: 15px;"><i class="fa fa-cubes"></i> Configuración de Producto Compuesto</h5>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group has-feedback">
+                    <label class="control-label">Tipo de Producto: <span class="symbol required"></span></label>
+                    <i class="fa fa-bars form-control-feedback"></i>
+                    <select style="color:#000;font-weight:bold;" name="tipo_producto" id="tipo_producto" class="form-control" onChange="toggleProductoCompuesto();" required="" aria-required="true">
+                    <option value="PADRE"<?php if (!isset($reg[0]['tipo_producto']) || $reg[0]['tipo_producto'] == 'PADRE' || $reg[0]['tipo_producto'] == 'SIMPLE') { echo " selected"; } ?>>PADRE</option>
+                    <option value="HIJO"<?php if (isset($reg[0]['tipo_producto']) && $reg[0]['tipo_producto'] == 'HIJO') { echo " selected"; } ?>>HIJO (Presentación)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-5" id="div_producto_padre" style="<?php echo (isset($reg[0]['tipo_producto']) && $reg[0]['tipo_producto'] == 'HIJO') ? '' : 'display:none;'; ?>">
+                <div class="form-group has-feedback">
+                    <label class="control-label">Producto Padre: <span class="symbol required"></span></label>
+                    <input type="hidden" name="producto_padre_id" id="producto_padre_id" <?php if (isset($reg[0]['producto_padre_id'])) { ?> value="<?php echo encrypt($reg[0]['producto_padre_id']); ?>"<?php } ?>>
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="producto_padre_nombre" id="producto_padre_nombre" placeholder="Click en buscar para seleccionar..." autocomplete="off" <?php if (isset($reg[0]['producto_padre_nombre'])) { ?> value="<?php echo $reg[0]['producto_padre_nombre']; ?>" <?php } ?> readonly style="background-color: #f5f5f5;"/>
+                        <span class="input-group-btn">
+                            <button class="btn btn-danger" type="button" onclick="BuscarProductoPadre();"><i class="fa fa-search"></i> Buscar Padre</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4" id="div_cantidad_conversion" style="<?php echo (isset($reg[0]['tipo_producto']) && $reg[0]['tipo_producto'] == 'HIJO') ? '' : 'display:none;'; ?>">
+                <div class="form-group has-feedback">
+                    <label class="control-label">Cant. Conversión: <span class="symbol required"></span></label>
+                    <input type="text" class="form-control" name="cantidad_conversion" id="cantidad_conversion" onKeyPress="EvaluateText('%f', this);" onBlur="this.value = NumberFormat(this.value, '2', '.', '')" placeholder="Ej: 6.00" autocomplete="off" <?php if (isset($reg[0]['cantidad_conversion'])) { ?> value="<?php echo number_format($reg[0]['cantidad_conversion'], 2, '.', ''); ?>" <?php } else { ?> value="1.00" <?php } ?> required="" aria-required="true"/>  
+                    <i class="fa fa-calculator form-control-feedback"></i>
+                    <small class="text-muted">Ej: Si 1 caja = 6 unidades, ponga 6</small>
+                </div>
+            </div>
+        </div>
+        <!-- FIN SECCION PRODUCTOS COMPUESTOS -->
+
         <div class="row">
             <div class="col-md-3">
                 <div class="form-group has-feedback">
@@ -721,7 +761,9 @@ elseif(isset($_POST["proceso"]) and $_POST["proceso"]=="update")
                     <?php } ?> 
                 </div>
             </div>
+        </div>
 
+        <div class="row">
             <div class="col-md-3">
                 <div class="fileinput fileinput-new" data-provides="fileinput">
                     <div class="fileinput-preview thumbnail" data-trigger="fileinput" style="width: 130px; height: 130px;">
@@ -846,6 +888,65 @@ elseif(isset($_POST["proceso"]) and $_POST["proceso"]=="update")
     <script src="assets/plugins/noty/packaged/jquery.noty.packaged.min.js"></script>
     <script src="assets/plugins/noty/themes/relax.js"></script>
     <!-- jQuery -->
+
+    <!-- SCRIPT PRODUCTOS COMPUESTOS -->
+    <script type="text/javascript">
+    // Función para mostrar/ocultar campos de producto compuesto
+    function toggleProductoCompuesto() {
+        var tipoProducto = document.getElementById('tipo_producto').value;
+        var divPadre = document.getElementById('div_producto_padre');
+        var divConversion = document.getElementById('div_cantidad_conversion');
+        var existenciaInput = document.getElementById('existencia');
+        var existencia2Input = document.getElementById('existencia2');
+        
+        if (tipoProducto === 'HIJO') {
+            // Mostrar campos de producto hijo
+            divPadre.style.display = '';
+            divConversion.style.display = '';
+            // Bloquear existencia y poner en 0
+            existenciaInput.value = '0.00';
+            existenciaInput.readOnly = true;
+            existenciaInput.style.backgroundColor = '#e9ecef';
+            if(existencia2Input) existencia2Input.value = '0.00';
+        } else {
+            // Ocultar campos de producto hijo
+            divPadre.style.display = 'none';
+            divConversion.style.display = 'none';
+            // Desbloquear existencia
+            existenciaInput.readOnly = false;
+            existenciaInput.style.backgroundColor = '';
+            // Limpiar campos de padre
+            document.getElementById('producto_padre_id').value = '';
+            document.getElementById('producto_padre_nombre').value = '';
+            document.getElementById('cantidad_conversion').value = '1.00';
+        }
+    }
+
+    // Función para buscar producto padre
+    function BuscarProductoPadre() {
+        var codsucursal = document.getElementById('codsucursal').value;
+        if (codsucursal === '') {
+            swal("¡Error!", "Debe seleccionar una sucursal primero", "error");
+            return;
+        }
+        
+        var url = 'modal_buscar_producto_padre.php?codsucursal=' + codsucursal;
+        var opciones = "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=900,height=600,top=100,left=200";
+        window.open(url, 'BuscarProductoPadre', opciones);
+    }
+
+    // Función callback cuando se selecciona un producto padre desde el modal
+    function SeleccionarProductoPadre(idproducto, codproducto, nomproducto) {
+        document.getElementById('producto_padre_id').value = idproducto;
+        document.getElementById('producto_padre_nombre').value = codproducto + ' - ' + nomproducto;
+    }
+
+    // Ejecutar al cargar la página para mantener estado
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleProductoCompuesto();
+    });
+    </script>
+    <!-- FIN SCRIPT PRODUCTOS COMPUESTOS -->
     
 </body>
 </html>

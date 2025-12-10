@@ -4033,6 +4033,22 @@ $('document').ready(function()
 		$("#btn-submit").html('<span class="fa fa-save"></span> Guardar').attr('disabled', false);
 																		
 					});
+				}
+				else if(data==8){
+							
+			$("#save").fadeIn(1000, function(){
+							
+		var n = noty({
+          text: "<span class='fa fa-warning'></span> LOS PRODUCTOS TIPO HIJO NO PUEDEN RECIBIR AJUSTES DE INVENTARIO. DEBE AJUSTAR EL PRODUCTO PADRE...!",
+          theme: 'relax',
+          layout: 'topRight',
+          type: 'error',
+          timeout: 5000, });
+		$("#btn-submit").html('<span class="fa fa-save"></span> Guardar').attr('disabled', false);
+          $('body').removeClass('modal-open');
+          $('#myModalAjuste').modal('hide');
+																		
+					});
 				} 
 				else{
 								
@@ -5210,6 +5226,20 @@ $('document').ready(function()
 																		
 					});
 				}
+				else if(data==7){
+							
+			$("#save").fadeIn(1000, function(){
+							
+		var n = noty({
+          text: "<span class='fa fa-warning'></span> LOS PRODUCTOS TIPO HIJO NO PUEDEN SER TRASPASADOS. DEBE TRASPASAR EL PRODUCTO PADRE...!",
+          theme: 'relax',
+          layout: 'topRight',
+          type: 'error',
+          timeout: 5000, });
+          $("#submit_guardar").html('<button type="submit" name="btn-submit" id="btn-submit" class="btn btn-danger"><span class="fa fa-save"></span> Guardar (F2)</button>');
+																		
+					});
+				}
 				else{
 								
 			$("#save").fadeIn(1000, function(){
@@ -5877,6 +5907,20 @@ $('document').ready(function()
           theme: 'relax',
           layout: 'topRight',
           type: 'warning',
+          timeout: 5000, });
+          $("#submit_guardar").html('<button type="submit" name="btn-submit" id="btn-submit" class="btn btn-danger"><span class="fa fa-save"></span> Guardar (F2)</button>');
+																		
+					});
+				}
+				else if(data==16){
+							
+			$("#save").fadeIn(1000, function(){
+							
+		var n = noty({
+          text: "<span class='fa fa-warning'></span> LOS PRODUCTOS TIPO HIJO NO PUEDEN RECIBIR COMPRAS. DEBE COMPRAR EL PRODUCTO PADRE...!",
+          theme: 'relax',
+          layout: 'topRight',
+          type: 'error',
           timeout: 5000, });
           $("#submit_guardar").html('<button type="submit" name="btn-submit" id="btn-submit" class="btn btn-danger"><span class="fa fa-save"></span> Guardar (F2)</button>');
 																		
@@ -9863,6 +9907,21 @@ $('document').ready(function()
           theme: 'relax',
           layout: 'topRight',
           type: 'warning',
+          timeout: 5000, });
+		$("#submit_cobrar").attr('disabled', false);
+		$("#submit_guardar").attr('disabled', false);
+																		
+					});
+				}
+				else if(data==20){
+							
+			$("#save").fadeIn(1000, function(){
+							
+		var n = noty({
+          text: "<span class='fa fa-warning'></span> STOCK INSUFICIENTE EN EL PRODUCTO PADRE PARA COMPLETAR LA VENTA DEL PRODUCTO HIJO, VERIFIQUE LA EXISTENCIA DEL PRODUCTO PADRE...!",
+          theme: 'relax',
+          layout: 'topRight',
+          type: 'error',
           timeout: 5000, });
 		$("#submit_cobrar").attr('disabled', false);
 		$("#submit_guardar").attr('disabled', false);

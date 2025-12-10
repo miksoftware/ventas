@@ -82,7 +82,11 @@ class Json
 	    ROUND(productos.precioxmenor, 2) precioxmenor, 
 	    ROUND(productos.precioxmayor, 2) precioxmayor, 
 	    ROUND(productos.precioxpublico, 2) precioxpublico, 
-	    productos.existencia, 
+	    CASE 
+	        WHEN productos.tipo_producto = 'HIJO' AND productos.producto_padre_id IS NOT NULL 
+	        THEN FLOOR(IFNULL(padre.existencia, 0) / IFNULL(productos.cantidad_conversion, 1))
+	        ELSE productos.existencia 
+	    END AS existencia,
 	    productos.ivaproducto, 
 	    ROUND(productos.descproducto, 2) descproducto, 
 	    productos.fechaelaboracion, 
@@ -96,12 +100,16 @@ class Json
 	    marcas.nommarca, 
 	    modelos.nommodelo, 
 	    presentaciones.nompresentacion, 
-	    colores.nomcolor 
+	    colores.nomcolor,
+	    productos.tipo_producto,
+	    productos.producto_padre_id,
+	    productos.cantidad_conversion
 	    FROM productos LEFT JOIN marcas ON productos.codmarca = marcas.codmarca 
 	    LEFT JOIN modelos ON modelos.codmodelo = productos.codmodelo 
 	    LEFT JOIN presentaciones ON productos.codpresentacion = presentaciones.codpresentacion
         LEFT JOIN colores ON productos.codcolor = colores.codcolor
 	    LEFT JOIN impuestos ON productos.ivaproducto = impuestos.codimpuesto
+	    LEFT JOIN productos AS padre ON productos.producto_padre_id = padre.idproducto
         WHERE CONCAT(productos.codproducto, '',productos.producto, '',productos.codigobarra, '',marcas.nommarca, if(productos.imei='','0',productos.imei)) LIKE '%".$filtro."%'
         AND productos.codsucursal = '".strip_tags($filtro2)."'
         ORDER BY productos.producto 
@@ -135,7 +143,11 @@ class Json
 	    ROUND(productos.precioxmenor, 2) precioxmenor, 
 	    ROUND(productos.precioxmayor, 2) precioxmayor, 
 	    ROUND(productos.precioxpublico, 2) precioxpublico, 
-	    productos.existencia, 
+	    CASE 
+	        WHEN productos.tipo_producto = 'HIJO' AND productos.producto_padre_id IS NOT NULL 
+	        THEN FLOOR(IFNULL(padre.existencia, 0) / IFNULL(productos.cantidad_conversion, 1))
+	        ELSE productos.existencia 
+	    END AS existencia,
 	    productos.ivaproducto, 
 	    ROUND(productos.descproducto, 2) descproducto, 
 	    productos.fechaelaboracion, 
@@ -149,12 +161,16 @@ class Json
 	    marcas.nommarca, 
 	    modelos.nommodelo, 
 	    presentaciones.nompresentacion, 
-	    colores.nomcolor 
+	    colores.nomcolor,
+	    productos.tipo_producto,
+	    productos.producto_padre_id,
+	    productos.cantidad_conversion
 	    FROM productos LEFT JOIN marcas ON productos.codmarca = marcas.codmarca 
 	    LEFT JOIN modelos ON modelos.codmodelo = productos.codmodelo 
 	    LEFT JOIN presentaciones ON productos.codpresentacion = presentaciones.codpresentacion
         LEFT JOIN colores ON productos.codcolor = colores.codcolor
 	    LEFT JOIN impuestos ON productos.ivaproducto = impuestos.codimpuesto
+	    LEFT JOIN productos AS padre ON productos.producto_padre_id = padre.idproducto
         WHERE CONCAT(productos.codproducto, '',productos.producto, '',productos.codigobarra, '',marcas.nommarca, if(productos.imei='','0',productos.imei)) LIKE '%".$filtro."%' 
         AND productos.codsucursal= '".strip_tags($_SESSION["codsucursal"])."' 
         ORDER BY productos.producto 
@@ -212,7 +228,8 @@ class Json
         LEFT JOIN colores ON productos.codcolor = colores.codcolor
 	    LEFT JOIN impuestos ON productos.ivaproducto = impuestos.codimpuesto
         WHERE CONCAT(productos.codproducto, '',productos.producto, '',productos.codigobarra, '',marcas.nommarca, if(productos.imei='','0',productos.imei)) LIKE '%".$filtro."%' 
-        AND productos.codsucursal= '".strip_tags($_SESSION["codsucursal"])."' 
+        AND productos.codsucursal= '".strip_tags($_SESSION["codsucursal"])."'
+        AND (productos.tipo_producto IS NULL OR productos.tipo_producto != 'HIJO')
         ORDER BY productos.producto 
         ASC LIMIT 0,1000";
         $conexion = new conectorDB;
@@ -265,7 +282,8 @@ class Json
         LEFT JOIN colores ON productos.codcolor = colores.codcolor
 	    LEFT JOIN impuestos ON productos.ivaproducto = impuestos.codimpuesto  
 	    WHERE (productos.codproducto = '$filtro' or productos.codigobarra = '$filtro')
-	    AND productos.codsucursal = '".strip_tags($_SESSION["codsucursal"])."' 
+	    AND productos.codsucursal = '".strip_tags($_SESSION["codsucursal"])."'
+	    AND (productos.tipo_producto IS NULL OR productos.tipo_producto != 'HIJO')
 	    GROUP BY productos.codproducto, productos.codsucursal 
 	    ORDER BY productos.producto ASC LIMIT 0,1000";
         $conexion = new conectorDB;
@@ -296,16 +314,24 @@ class Json
 	    ROUND(productos.precioxpublico, 2) precioxpublico,
 	    ROUND(productos.descproducto, 2) descproducto,
 	    productos.ivaproducto,
-	    productos.existencia,
+	    CASE 
+	        WHEN productos.tipo_producto = 'HIJO' AND productos.producto_padre_id IS NOT NULL 
+	        THEN FLOOR(IFNULL(padre.existencia, 0) / IFNULL(productos.cantidad_conversion, 1))
+	        ELSE productos.existencia 
+	    END AS existencia,
 	    impuestos.codimpuesto,
 	    impuestos.nomimpuesto,
 	    impuestos.valorimpuesto,
-	    impuestos.posicionimpuesto
+	    impuestos.posicionimpuesto,
+	    productos.tipo_producto,
+	    productos.producto_padre_id,
+	    productos.cantidad_conversion
 	    FROM productos LEFT JOIN marcas ON productos.codmarca = marcas.codmarca 
 	    LEFT JOIN modelos ON modelos.codmodelo = productos.codmodelo 
 	    LEFT JOIN presentaciones ON productos.codpresentacion = presentaciones.codpresentacion
         LEFT JOIN colores ON productos.codcolor = colores.codcolor
-	    LEFT JOIN impuestos ON productos.ivaproducto = impuestos.codimpuesto  
+	    LEFT JOIN impuestos ON productos.ivaproducto = impuestos.codimpuesto
+	    LEFT JOIN productos AS padre ON productos.producto_padre_id = padre.idproducto
 	    WHERE (productos.codproducto = '$filtro' or productos.codigobarra = '$filtro') 
 	    AND productos.codsucursal = '".strip_tags($_SESSION["codsucursal"])."' 
 	    GROUP BY productos.codproducto, productos.codsucursal 

@@ -5,9 +5,9 @@ require('php-8.1-strftime.php');
 class Db{
 		
 	private $dbHost     = "localhost";
-    private $dbUsername = "u285092379_unifarmav";
-    private $dbPassword = "u9G=Y]Dzu";
-    private $dbName     = "u285092379_unifarmav";
+    private $dbUsername = "root";
+    private $dbPassword = "";
+    private $dbName     = "ventas";
     private $_pdoStat;
 	protected $p; 
 	protected $dbh; 
