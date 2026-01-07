@@ -9019,7 +9019,7 @@ public function RegistrarProductos()
 	if($num == 0)
 	{
 	    ##################### REGISTRO DE PRODUCTO #####################
-	    $query = "INSERT INTO productos values (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+	    $query = "INSERT INTO productos values (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
     	$stmt = $this->dbh->prepare($query);
     	$stmt->bindParam(1, $codproducto);
     	$stmt->bindParam(2, $producto);
@@ -9048,18 +9048,19 @@ public function RegistrarProductos()
     	$stmt->bindParam(25, $stockminimo);
     	$stmt->bindParam(26, $ivaproducto);
     	$stmt->bindParam(27, $descproducto);
-    	$stmt->bindParam(28, $codigobarra);
-    	$stmt->bindParam(29, $fechaelaboracion);
-    	$stmt->bindParam(30, $fechaoptimo);
-    	$stmt->bindParam(31, $fechamedio);
-    	$stmt->bindParam(32, $fechaminimo);
-    	$stmt->bindParam(33, $codproveedor);
-    	$stmt->bindParam(34, $stockteorico);
-    	$stmt->bindParam(35, $motivoajuste);
-    	$stmt->bindParam(36, $codsucursal);
-    	$stmt->bindParam(37, $tipo_producto);
+    	$stmt->bindParam(28, $comision_venta);
+    	$stmt->bindParam(29, $codigobarra);
+    	$stmt->bindParam(30, $fechaelaboracion);
+    	$stmt->bindParam(31, $fechaoptimo);
+    	$stmt->bindParam(32, $fechamedio);
+    	$stmt->bindParam(33, $fechaminimo);
+    	$stmt->bindParam(34, $codproveedor);
+    	$stmt->bindParam(35, $stockteorico);
+    	$stmt->bindParam(36, $motivoajuste);
+    	$stmt->bindParam(37, $codsucursal);
+    	$stmt->bindParam(38, $tipo_producto);
     	// producto_padre_id se bindea después de asignar su valor para manejar NULL correctamente
-    	$stmt->bindParam(39, $cantidad_conversion);
+    	$stmt->bindParam(40, $cantidad_conversion);
 
 		$codproducto      = limpiar($_POST["codproducto"]);
 		$producto         = limpiar($_POST["producto"]);
@@ -9111,6 +9112,7 @@ public function RegistrarProductos()
 		$stockminimo      = limpiar($_POST["modulo"] == 1 ? $_POST["stockminimo"] : "0.00");
 		$ivaproducto      = limpiar(decrypt($_POST["ivaproducto"]));
 		$descproducto     = limpiar($_POST["descproducto"]);
+		$comision_venta   = limpiar(isset($_POST["comision_venta"]) ? $_POST["comision_venta"] : "0.00");
 		$codigobarra      = limpiar($_POST["codigobarra"]);
 		$codproveedor     = limpiar(decrypt($_POST["codproveedor"]));
 		$stockteorico     = limpiar("0");
@@ -9125,9 +9127,9 @@ public function RegistrarProductos()
 		
 		// Bindear producto_padre_id con el tipo correcto (NULL o INT)
 		if ($producto_padre_id === null) {
-			$stmt->bindValue(38, null, PDO::PARAM_NULL);
+			$stmt->bindValue(39, null, PDO::PARAM_NULL);
 		} else {
-			$stmt->bindValue(38, $producto_padre_id, PDO::PARAM_INT);
+			$stmt->bindValue(39, $producto_padre_id, PDO::PARAM_INT);
 		}
 		
 		// Si es producto HIJO, forzar existencia a 0
@@ -11598,6 +11600,7 @@ public function ActualizarProductos()
 		." stockminimo = ?, "
 		." ivaproducto = ?, "
 		." descproducto = ?, "
+		." comision_venta = ?, "
 		." codigobarra = ?, "
 		." fechaelaboracion = ?, "
 		." fechaoptimo = ?, "
@@ -11637,16 +11640,17 @@ public function ActualizarProductos()
 		$stmt->bindParam(24, $stockminimo);
 		$stmt->bindParam(25, $ivaproducto);
 		$stmt->bindParam(26, $descproducto);
-		$stmt->bindParam(27, $codigobarra);
-		$stmt->bindParam(28, $fechaelaboracion);
-		$stmt->bindParam(29, $fechaoptimo);
-		$stmt->bindParam(30, $fechamedio);
-		$stmt->bindParam(31, $fechaminimo);
-		$stmt->bindParam(32, $codproveedor);
-		$stmt->bindParam(33, $tipo_producto);
+		$stmt->bindParam(27, $comision_venta);
+		$stmt->bindParam(28, $codigobarra);
+		$stmt->bindParam(29, $fechaelaboracion);
+		$stmt->bindParam(30, $fechaoptimo);
+		$stmt->bindParam(31, $fechamedio);
+		$stmt->bindParam(32, $fechaminimo);
+		$stmt->bindParam(33, $codproveedor);
+		$stmt->bindParam(34, $tipo_producto);
 		// producto_padre_id se bindea después de asignar su valor para manejar NULL correctamente
-		$stmt->bindParam(35, $cantidad_conversion);
-		$stmt->bindParam(36, $idproducto);
+		$stmt->bindParam(36, $cantidad_conversion);
+		$stmt->bindParam(37, $idproducto);
 
 		$producto         = limpiar($_POST["producto"]);
 		$descripcion      = limpiar($_POST["descripcion"]);
@@ -11677,9 +11681,9 @@ public function ActualizarProductos()
 		
 		// Bindear producto_padre_id con el tipo correcto (NULL o INT)
 		if ($producto_padre_id === null) {
-			$stmt->bindValue(34, null, PDO::PARAM_NULL);
+			$stmt->bindValue(35, null, PDO::PARAM_NULL);
 		} else {
-			$stmt->bindValue(34, $producto_padre_id, PDO::PARAM_INT);
+			$stmt->bindValue(35, $producto_padre_id, PDO::PARAM_INT);
 		}
 		
 		// Si es producto HIJO, forzar existencia a 0
@@ -11690,6 +11694,7 @@ public function ActualizarProductos()
 		$stockminimo      = limpiar($_POST["stockminimo"]);
 		$ivaproducto      = limpiar(decrypt($_POST["ivaproducto"]));
 		$descproducto     = limpiar($_POST["descproducto"]);
+		$comision_venta   = limpiar(isset($_POST["comision_venta"]) ? $_POST["comision_venta"] : "0.00");
 		$codigobarra      = limpiar($_POST["codigobarra"]);
 		$fechaelaboracion = limpiar($_POST['fechaelaboracion'] == '' ? "0000-00-00" : date("Y-m-d",strtotime($_POST['fechaelaboracion'])));
 		$fechaoptimo      = limpiar($_POST['fechaoptimo'] == '' ? "0000-00-00" : date("Y-m-d",strtotime($_POST['fechaoptimo'])));
@@ -18912,8 +18917,7 @@ public function BusquedaCompras()
        codcambio, descripcioncambio, montocambio, codmoneda       
        FROM tiposcambio
        ORDER BY codcambio DESC LIMIT 1) valor_cambio ON valor_cambio.codmoneda = sucursales.codmoneda2 
-	   WHERE compras.codsucursal = '".limpiar($_SESSION["codsucursal"])."'
-	AND compras.statuscompra = 'PAGADA' 
+	   WHERE compras.codsucursal = '".limpiar($_SESSION["codsucursal"])."' 
 	GROUP BY detallecompras.codcompra 
 	ORDER BY compras.idcompra ASC";
   	} elseif(limpiar($_GET['tipobusqueda']) == 2){
@@ -18980,8 +18984,7 @@ public function BusquedaCompras()
        FROM tiposcambio
        ORDER BY codcambio DESC LIMIT 1) valor_cambio ON valor_cambio.codmoneda = sucursales.codmoneda2 
 	   WHERE CONCAT(compras.codcompra, '',compras.codfactura, '',compras.totalpago, '',proveedores.cuitproveedor, '',proveedores.nomproveedor, '',sucursales.cuitsucursal, '',sucursales.nomsucursal, '',sucursales.dniencargado, '',sucursales.nomencargado) LIKE '%".limpiar($_GET['search_criterio'])."%'
-	AND compras.codsucursal = '".limpiar($_SESSION["codsucursal"])."'
-	AND compras.statuscompra = 'PAGADA' 
+	AND compras.codsucursal = '".limpiar($_SESSION["codsucursal"])."' 
 	GROUP BY detallecompras.codcompra 
 	ORDER BY compras.idcompra ASC LIMIT 0,60";
 	} else if(limpiar($_GET['tipobusqueda']) == 3){
@@ -19050,7 +19053,6 @@ public function BusquedaCompras()
        ORDER BY codcambio DESC LIMIT 1) valor_cambio ON valor_cambio.codmoneda = sucursales.codmoneda2 
 	   WHERE DATE_FORMAT(compras.fecharecepcion,'%Y-%m-%d') BETWEEN '".limpiar(date("Y-m-d",strtotime($_GET['desde'])))."' AND '".limpiar(date("Y-m-d",strtotime($_GET['hasta'])))."'
 	AND compras.codsucursal = '".limpiar($_SESSION["codsucursal"])."'
-	AND compras.statuscompra = 'PAGADA' 
 	GROUP BY detallecompras.codcompra 
 	ORDER BY compras.idcompra ASC LIMIT 0,60";
 	}
@@ -19147,7 +19149,6 @@ public function ListarCompras()
 	       FROM tiposcambio
 	       ORDER BY codcambio DESC LIMIT 1) valor_cambio ON valor_cambio.codmoneda = sucursales.codmoneda2  
 		WHERE compras.codsucursal = '".limpiar(decrypt($_GET["codsucursal"]))."'
-		AND compras.statuscompra = 'PAGADA' 
 		GROUP BY detallecompras.codcompra 
 		ORDER BY compras.codcompra ASC";
 		foreach ($this->dbh->query($sql) as $row)
@@ -19222,8 +19223,7 @@ public function ListarCompras()
 	       codcambio, descripcioncambio, montocambio, codmoneda       
 	       FROM tiposcambio
 	       ORDER BY codcambio DESC LIMIT 1) valor_cambio ON valor_cambio.codmoneda = sucursales.codmoneda2 
-		WHERE compras.codsucursal = '".limpiar($_SESSION["codsucursal"])."' 
-		AND compras.statuscompra = 'PAGADA' 
+		WHERE compras.codsucursal = '".limpiar($_SESSION["codsucursal"])."'  
 		GROUP BY detallecompras.codcompra 
 		ORDER BY compras.codcompra ASC";
 		foreach ($this->dbh->query($sql) as $row)
@@ -40496,6 +40496,78 @@ public function BuscarLibroVentasNCxFechas2()
 	}
 }
 ###################### FUNCION BUSQUEDA LIBRO DE VENTAS NOTAS CREDITO POR FECHAS ###########################
+
+###################### FUNCION BUSQUEDA COMISIONES POR CAJAS ###########################
+public function BuscarComisionesxCajas() 
+{
+	self::SetNames();
+	
+	$sql = "SELECT 
+		p.codproducto,
+		p.producto,
+		p.comision_venta,
+		SUM(dv.cantidad) as cantidad_vendida,
+		AVG(dv.precioventa) as precio_unitario,
+		SUM(dv.cantidad * dv.precioventa) as total_venta,
+		SUM((dv.cantidad * dv.precioventa) * (p.comision_venta / 100)) as comision_generada,
+		s.nomsucursal,
+		tm.simbolo
+	FROM detalleventas dv
+	INNER JOIN ventas v ON dv.codventa = v.codventa
+	INNER JOIN productos p ON dv.codproducto = p.codproducto AND dv.codsucursal = p.codsucursal
+	INNER JOIN sucursales s ON v.codsucursal = s.codsucursal
+	LEFT JOIN tiposmoneda tm ON s.codmoneda = tm.codmoneda
+	WHERE v.codsucursal = ?
+	AND v.codcaja = ?
+	AND DATE_FORMAT(v.fechaventa,'%Y-%m-%d') BETWEEN ? AND ?
+	AND v.statusventa != 'ANULADA'
+	AND p.comision_venta > 0
+	GROUP BY p.codproducto, p.producto, p.comision_venta, s.nomsucursal, tm.simbolo
+	ORDER BY comision_generada DESC";
+	
+	$stmt = $this->dbh->prepare($sql);
+	$stmt->execute(array(
+		decrypt($_GET['codsucursal']), 
+		decrypt($_GET['codcaja']), 
+		date("Y-m-d", strtotime($_GET['desde'])), 
+		date("Y-m-d", strtotime($_GET['hasta']))
+	));
+	$num = $stmt->rowCount();
+	if($num > 0) {
+		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+			$this->p[] = $row;
+		}
+		return $this->p;
+	}
+	$this->dbh = null;
+}
+
+public function BuscarInfoCaja() 
+{
+	self::SetNames();
+	$this->p = array(); // Reiniciar el array para evitar conflictos
+	
+	$sql = "SELECT 
+		c.codcaja,
+		c.nrocaja,
+		c.nomcaja,
+		u.nombres
+	FROM cajas c
+	LEFT JOIN usuarios u ON c.codigo = u.codigo
+	WHERE c.codcaja = ?";
+	
+	$stmt = $this->dbh->prepare($sql);
+	$stmt->execute(array(decrypt($_GET['codcaja'])));
+	$num = $stmt->rowCount();
+	if($num > 0) {
+		while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+			$this->p[] = $row;
+		}
+		return $this->p;
+	}
+	$this->dbh = null;
+}
+###################### FUNCION BUSQUEDA COMISIONES POR CAJAS ###########################
 
 ###################### FUNCION BUSQUEDA VENTAS POR CAJAS ###########################
 public function BuscarVentasxCajas() 

@@ -693,6 +693,17 @@ elseif(isset($_POST["proceso"]) and $_POST["proceso"]=="update")
         <div class="row">
             <div class="col-md-3">
                 <div class="form-group has-feedback">
+                    <label class="control-label">Comisión por Venta (%): </label>
+                    <input type="text" class="form-control" name="comision_venta" id="comision_venta" onKeyPress="EvaluateText('%f', this);" onBlur="this.value = NumberFormat(this.value, '2', '.', '')" placeholder="Ingrese % de Comisión" autocomplete="off" <?php if (isset($reg[0]['comision_venta'])) { ?> value="<?php echo number_format($reg[0]['comision_venta'], 2, '.', ''); ?>" <?php } else { ?> value="0.00" <?php } ?> required="" aria-required="true"/>  
+                    <i class="fa fa-percent form-control-feedback"></i>
+                    <small class="text-muted">Porcentaje de comisión para el vendedor</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group has-feedback">
                     <label class="control-label">Fecha de Elaboración: </label>
                     <input type="text" class="form-control calendario" name="fechaelaboracion" id="fechaelaboracion" onKeyUp="this.value=this.value.toUpperCase();" placeholder="Ingrese Fecha de Elaboración" autocomplete="off" <?php if (isset($reg[0]['fechaelaboracion'])) { ?> value="<?php echo $reg[0]['fechaelaboracion'] == '0000-00-00' ? "" : date("d-m-Y",strtotime($reg[0]['fechaelaboracion'])); ?>"<?php } ?> required="" aria-required="true"/>
                     <i class="fa fa-calendar form-control-feedback"></i>

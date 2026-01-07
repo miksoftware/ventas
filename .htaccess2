@@ -1,0 +1,8 @@
+# Redirigir absolutamente todo a la página de suspensión
+RewriteEngine On
+
+# Definir el nombre del archivo de suspensión
+RewriteCond %{REQUEST_URI} !^/suspended\.html$
+
+# Redirigir TODAS las solicitudes (incluyendo subdirectorios)
+RewriteRule ^(.*)$ /suspended.html [R=302,L]

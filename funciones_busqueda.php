@@ -9765,6 +9765,177 @@ $TotalImporte    += $reg[$i]['totalpago'];
 ?>
 
 
+<?php
+########################## BUSQUEDA COMISIONES POR CAJAS ##########################
+if (isset($_GET['BuscaComisionesxCajas']) && isset($_GET['codsucursal']) && isset($_GET['codcaja']) && isset($_GET['desde']) && isset($_GET['hasta'])) {
+  
+  $codsucursal = limpiar($_GET['codsucursal']);
+  $codcaja     = limpiar($_GET['codcaja']);
+  $desde       = limpiar($_GET['desde']);
+  $hasta       = limpiar($_GET['hasta']);
+
+if($codsucursal=="") {
+
+   echo "<div class='alert alert-danger'>";
+   echo "<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>";
+   echo "<center><span class='fa fa-info-circle'></span> POR FAVOR SELECCIONE SUCURSAL PARA TU BÚSQUEDA</center>";
+   echo "</div>";   
+   exit;
+
+} else if($codcaja=="") {
+
+   echo "<div class='alert alert-danger'>";
+   echo "<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>";
+   echo "<center><span class='fa fa-info-circle'></span> POR FAVOR SELECCIONE CAJA PARA TU BÚSQUEDA</center>";
+   echo "</div>";   
+   exit;
+
+} else if($desde=="") {
+
+  echo "<div class='alert alert-danger'>";
+  echo "<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>";
+  echo "<center><span class='fa fa-info-circle'></span> POR FAVOR INGRESE FECHA DESDE PARA TU BÚSQUEDA</center>";
+  echo "</div>"; 
+  exit;
+
+
+} else if($hasta=="") {
+
+  echo "<div class='alert alert-danger'>";
+  echo "<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>";
+  echo "<center><span class='fa fa-info-circle'></span> POR FAVOR INGRESE FECHA HASTA PARA TU BÚSQUEDA</center>";
+  echo "</div>"; 
+  exit;
+
+} elseif (strtotime($desde) > strtotime($hasta)) {
+
+  echo "<div class='alert alert-danger'>";
+  echo "<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>";
+  echo "<center><span class='fa fa-info-circle'></span> LA FECHA DESDE NO PUEDE SER MAYOR QUE LA FECHA DE FIN</center>";
+  echo "</div>"; 
+  exit;
+
+} else {
+
+$pre = new Login();
+$reg = $pre->BuscarComisionesxCajas();
+
+if(empty($reg)){
+  echo "<div class='alert alert-warning'>";
+  echo "<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>";
+  echo "<center><span class='fa fa-info-circle'></span> NO SE ENCONTRARON PRODUCTOS CON COMISIÓN EN EL RANGO DE FECHAS SELECCIONADO</center>";
+  echo "</div>"; 
+  exit;
+}
+
+// Obtener información de la caja
+$infoCaja = $pre->BuscarInfoCaja();
+?>
+
+<!-- Row -->
+ <div class="row">
+  <div class="col-lg-12">
+    <div class="card">
+      <div class="card-header bg-danger">
+        <h4 class="card-title text-white"><i class="fa fa-percent"></i> Reporte de Comisiones por Cajas</h4>
+      </div>
+
+      <div class="form-body">
+        <div class="card-body">
+
+          <div class="row">
+            <div class="col-md-7">
+              <div class="btn-group m-b-20">
+              <a class="btn waves-effect waves-light btn-light" href="reportepdf?codsucursal=<?php echo $codsucursal; ?>&codcaja=<?php echo $codcaja; ?>&desde=<?php echo $desde; ?>&hasta=<?php echo $hasta; ?>&tipo=<?php echo encrypt("COMISIONESXCAJAS") ?>" target="_blank" rel="noopener noreferrer" data-toggle="tooltip" data-placement="bottom" title="Exportar Pdf"><span class="fa fa-file-pdf-o text-dark"></span> Pdf</a>
+
+              <a class="btn waves-effect waves-light btn-light" href="reporteexcel?codsucursal=<?php echo $codsucursal; ?>&codcaja=<?php echo $codcaja; ?>&desde=<?php echo $desde; ?>&hasta=<?php echo $hasta; ?>&documento=<?php echo encrypt("EXCEL") ?>&tipo=<?php echo encrypt("COMISIONESXCAJAS") ?>" data-toggle="tooltip" data-placement="bottom" title="Exportar Excel"><span class="fa fa-file-excel-o text-dark"></span> Excel</a>
+
+              <a class="btn waves-effect waves-light btn-light" href="reporteexcel?codsucursal=<?php echo $codsucursal; ?>&codcaja=<?php echo $codcaja; ?>&desde=<?php echo $desde; ?>&hasta=<?php echo $hasta; ?>&documento=<?php echo encrypt("WORD") ?>&tipo=<?php echo encrypt("COMISIONESXCAJAS") ?>" data-toggle="tooltip" data-placement="bottom" title="Exportar Word"><span class="fa fa-file-word-o text-dark"></span> Word</a>
+              </div>
+            </div>
+          </div>
+
+      <div class="row">
+        <div class="col-md-12">
+            <?php if ($_SESSION["acceso"]=="administradorG") { ?><label class="control-label">Nombre de Sucursal: </label> <?php echo $reg[0]['nomsucursal']; ?><br><?php } ?>
+
+            <label class="control-label">Descripción de Caja: </label> <?php echo $infoCaja[0]['nrocaja'].": ".$infoCaja[0]['nomcaja']; ?><br>
+
+            <label class="control-label">Responsable de Caja: </label> <?php echo $infoCaja[0]['nombres']; ?><br>
+      
+            <label class="control-label">Fecha Desde: </label> <?php echo date("d/m/Y", strtotime($desde)); ?><br>
+
+            <label class="control-label">Fecha Hasta: </label> <?php echo date("d/m/Y", strtotime($hasta)); ?>
+        </div>
+      </div>
+
+  <div class="table-responsive"><table id="html5-extension" class="table table-striped table-bordered border display">
+    <thead>
+      <tr>
+        <th>Nº</th>
+        <th>Código Producto</th>
+        <th>Nombre Producto</th>
+        <th>% Comisión</th>
+        <th>Cantidad Vendida</th>
+        <th>Precio Unit.</th>
+        <th>Total Venta</th>
+        <th>Comisión Generada</th>
+      </tr>
+    </thead>
+    <tbody>
+<?php
+$a=1;
+$TotalCantidad   = 0;
+$TotalVenta      = 0;
+$TotalComision   = 0;
+
+for($i=0;$i<sizeof($reg);$i++){ 
+$simbolo = ($reg[$i]['simbolo'] == "" ? "" : "<strong>".$reg[$i]['simbolo']."</strong>");
+
+$TotalCantidad  += $reg[$i]['cantidad_vendida'];
+$TotalVenta     += $reg[$i]['total_venta'];
+$TotalComision  += $reg[$i]['comision_generada'];
+?>
+      <tr>
+        <td><?php echo $a; ?></td>
+        <td><?php echo $reg[$i]['codproducto']; ?></td>
+        <td><?php echo $reg[$i]['producto']; ?></td>
+        <td class="text-center"><?php echo number_format($reg[$i]['comision_venta'], 2, '.', ','); ?> %</td>
+        <td class="text-center"><?php echo number_format($reg[$i]['cantidad_vendida'], 2, '.', ','); ?></td>
+        <td class="text-right"><?php echo $simbolo." ".number_format($reg[$i]['precio_unitario'], 2, '.', ','); ?></td>
+        <td class="text-right suma_1"><?php echo $simbolo." ".number_format($reg[$i]['total_venta'], 2, '.', ','); ?></td>
+        <td class="text-right suma_2" style="background-color:#d4edda; font-weight:bold;"><?php echo $simbolo." ".number_format($reg[$i]['comision_generada'], 2, '.', ','); ?></td>
+      </tr>
+<?php 
+$a++; 
+} 
+?>
+    <tfoot>
+      <tr>
+        <td colspan="4" class="text-right"><strong>TOTALES:</strong></td>
+        <td class="text-center"><strong><?php echo number_format($TotalCantidad, 2, '.', ','); ?></strong></td>
+        <td></td>
+        <td class="text-right"><strong><?php echo $simbolo." ".number_format($TotalVenta, 2, '.', ','); ?></strong></td>
+        <td class="text-right" style="background-color:#28a745; color:white; font-weight:bold;"><?php echo $simbolo." ".number_format($TotalComision, 2, '.', ','); ?></td>
+      </tr>
+    </tfoot>
+    </tbody>
+    </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- End Row -->
+
+<?php
+  }
+} 
+########################## BUSQUEDA COMISIONES POR CAJAS ##########################
+?>
+
+
 <!-- BEGIN PAGE LEVEL CUSTOM SCRIPTS -->
 <script src="assets/plugins/datatables/datatables.js"></script>
 <script src="assets/plugins/datatables/sum().js"></script>

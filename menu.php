@@ -641,6 +641,8 @@ case 'administradorG':  ?>
 
                                 <li class="sidebar-item"><a href="comisionxventas" class="sidebar-link"><i class="mdi mdi-cards-variant"></i><span class="hide-menu"> Comisión x Ventas </span></a></li>
 
+                                <li class="sidebar-item"><a href="comisionesxcajas" class="sidebar-link"><i class="mdi mdi-percent"></i><span class="hide-menu"> Comisiones x Cajas </span></a></li>
+
                                 <li class="sidebar-item"><a href="detallesventasxcondiciones" class="sidebar-link"><i class="mdi mdi-priority-low"></i><span class="hide-menu"> Detalles x Condiciones</span></a></li>
 
                                 <li class="sidebar-item"><a href="detallesventasxfechas" class="sidebar-link"><i class="mdi mdi-priority-low"></i><span class="hide-menu"> Detalles x Fechas</span></a></li>
@@ -1005,6 +1007,8 @@ case 'administradorS': ?>
 
                                 <li class="sidebar-item"><a href="comisionxventas" class="sidebar-link"><i class="mdi mdi-cards-variant"></i><span class="hide-menu"> Comisión x Ventas </span></a></li>
 
+                                <li class="sidebar-item"><a href="comisionesxcajas" class="sidebar-link"><i class="mdi mdi-percent"></i><span class="hide-menu"> Comisiones x Cajas </span></a></li>
+
                                 <li class="sidebar-item"><a href="detallesventasxcondiciones" class="sidebar-link"><i class="mdi mdi-priority-low"></i><span class="hide-menu"> Detalles x Condiciones</span></a></li>
 
                                 <li class="sidebar-item"><a href="detallesventasxfechas" class="sidebar-link"><i class="mdi mdi-priority-low"></i><span class="hide-menu"> Detalles x Fechas</span></a></li>
@@ -1347,6 +1351,8 @@ case 'secretaria': ?>
                                 <li class="sidebar-item"><a href="ventasxcondiciones" class="sidebar-link"><i class="mdi mdi-rounded-corner"></i><span class="hide-menu"> Ventas x Condiciones</span></a></li>
 
                                 <li class="sidebar-item"><a href="comisionxventas" class="sidebar-link"><i class="mdi mdi-cards-variant"></i><span class="hide-menu"> Comisión x Ventas </span></a></li>  
+
+                                <li class="sidebar-item"><a href="comisionesxcajas" class="sidebar-link"><i class="mdi mdi-percent"></i><span class="hide-menu"> Comisiones x Cajas </span></a></li>
 
                                 <li class="sidebar-item"><a href="detallesventasxfechas" class="sidebar-link"><i class="mdi mdi-priority-low"></i><span class="hide-menu"> Detalles x Fechas</span></a></li>
                                   
