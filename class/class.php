@@ -24563,9 +24563,10 @@ public function ProcesarCotizaciones()
 		$sql = "SELECT 
 		codfactura 
 		FROM ventas 
-		WHERE (tipodocumento = 'NOTA_VENTA_5' or tipodocumento = 'NOTA_VENTA_5' or tipodocumento = 'NOTA_VENTA_A4')
+		WHERE (tipodocumento = 'NOTA_VENTA_5' OR tipodocumento = 'NOTA_VENTA_8' OR tipodocumento = 'NOTA_VENTA_A4')
 		AND codsucursal = '".limpiar(decrypt($_POST["codsucursal"]))."' 
-		ORDER BY idventa DESC LIMIT 1";
+		AND codfactura LIKE 'NV%'
+		ORDER BY CAST(SUBSTRING_INDEX(codfactura, '-', -1) AS UNSIGNED) DESC LIMIT 1";
 		foreach ($this->dbh->query($sql) as $row){
 
 			$factura = $row["codfactura"];
@@ -29404,9 +29405,10 @@ public function ProcesarPreventas()
 		$sql = "SELECT 
 		codfactura 
 		FROM ventas 
-		WHERE (tipodocumento = 'NOTA_VENTA_5' or tipodocumento = 'NOTA_VENTA_5' or tipodocumento = 'NOTA_VENTA_A4')
+		WHERE (tipodocumento = 'NOTA_VENTA_5' OR tipodocumento = 'NOTA_VENTA_8' OR tipodocumento = 'NOTA_VENTA_A4')
 		AND codsucursal = '".limpiar(decrypt($_POST["codsucursal"]))."' 
-		ORDER BY idventa DESC LIMIT 1";
+		AND codfactura LIKE 'NV%'
+		ORDER BY CAST(SUBSTRING_INDEX(codfactura, '-', -1) AS UNSIGNED) DESC LIMIT 1";
 		foreach ($this->dbh->query($sql) as $row){
 
 			$factura=$row["codfactura"];
@@ -32785,9 +32787,10 @@ public function CobrarFactura()
 		$sql = "SELECT 
 		codfactura 
 		FROM ventas 
-		WHERE (tipodocumento = 'NOTA_VENTA_5' or tipodocumento = 'NOTA_VENTA_8' or tipodocumento = 'NOTA_VENTA_A4')
+		WHERE (tipodocumento = 'NOTA_VENTA_5' OR tipodocumento = 'NOTA_VENTA_8' OR tipodocumento = 'NOTA_VENTA_A4')
 		AND codsucursal = '".limpiar(decrypt($_POST["codsucursal2"]))."' 
-		ORDER BY idventa DESC LIMIT 1";
+		AND codfactura LIKE 'NV%'
+		ORDER BY CAST(SUBSTRING_INDEX(codfactura, '-', -1) AS UNSIGNED) DESC LIMIT 1";
 		foreach ($this->dbh->query($sql) as $row){
 
 			$factura = $row["codfactura"];
@@ -34352,9 +34355,10 @@ public function RegistrarVentas()
 		$sql = "SELECT 
 		codfactura 
 		FROM ventas 
-		WHERE (tipodocumento = 'NOTA_VENTA_5' or tipodocumento = 'NOTA_VENTA_5' or tipodocumento = 'NOTA_VENTA_A4')
+		WHERE (tipodocumento = 'NOTA_VENTA_5' OR tipodocumento = 'NOTA_VENTA_8' OR tipodocumento = 'NOTA_VENTA_A4')
 		AND codsucursal = '".limpiar(decrypt($_POST["codsucursal"]))."' 
-		ORDER BY idventa DESC LIMIT 1";
+		AND codfactura LIKE 'NV%'
+		ORDER BY CAST(SUBSTRING_INDEX(codfactura, '-', -1) AS UNSIGNED) DESC LIMIT 1";
 		foreach ($this->dbh->query($sql) as $row){
 
 			$factura=$row["codfactura"];
@@ -34376,6 +34380,7 @@ public function RegistrarVentas()
 
     ################### REGISTRO LA VENTA ####################
     $query = "INSERT INTO ventas values (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+
 	$stmt = $this->dbh->prepare($query);
 	$stmt->bindParam(1, $tipodocumento);
 	$stmt->bindParam(2, $codarqueo);

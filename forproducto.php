@@ -187,8 +187,17 @@ elseif(isset($_POST["proceso"]) and $_POST["proceso"]=="update")
                     <input type="hidden" name="tipousuario" id="tipousuario" value="<?php echo ($_SESSION["acceso"]=="administradorG" ? 1 : 2) ?>"/>
                     <input type="hidden" name="modulo" id="modulo" value="1">
                     <input type="hidden" name="proceso" id="proceso" <?php if (isset($reg[0]['idproducto'])) { ?> value="update" <?php } else { ?> value="save" <?php } ?>/>
-                    <input type="text" class="form-control" name="codproducto" id="codproducto" onKeyUp="this.value=this.value.toUpperCase();" placeholder="Ingrese Código de Producto" autocomplete="off" <?php if (isset($reg[0]['codproducto'])) { ?> value="<?php echo $reg[0]['codproducto']; ?>" readonly="readonly" <?php } else { ?><?php } ?> required="" aria-required="true"/> 
-                    <i class="fa fa-bolt form-control-feedback"></i> 
+                    <?php if (isset($reg[0]['codproducto'])) { ?>
+                    <input type="text" class="form-control" name="codproducto" id="codproducto" onKeyUp="this.value=this.value.toUpperCase();" placeholder="Ingrese Código de Producto" autocomplete="off" value="<?php echo $reg[0]['codproducto']; ?>" readonly="readonly" required="" aria-required="true"/> 
+                    <i class="fa fa-bolt form-control-feedback"></i>
+                    <?php } else { ?>
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="codproducto" id="codproducto" onKeyUp="this.value=this.value.toUpperCase();" placeholder="Ingrese Código de Producto" autocomplete="off" required="" aria-required="true"/>
+                        <span class="input-group-btn">
+                            <button class="btn btn-info" type="button" onclick="generarCodigoAleatorio();" title="Generar código aleatorio"><i class="fa fa-random"></i></button>
+                        </span>
+                    </div>
+                    <?php } ?>
                 </div>
             </div>
 
@@ -1126,6 +1135,23 @@ elseif(isset($_POST["proceso"]) and $_POST["proceso"]=="update")
         toggleTipoComision();
     });
     // ========== FIN FUNCIONES PARA TIPO DE COMISIÓN ==========
+    
+    // ========== FUNCIÓN PARA GENERAR CÓDIGO ALEATORIO ==========
+    
+    // Genera un código alfanumérico aleatorio para el producto
+    function generarCodigoAleatorio() {
+        var caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        var longitud = 10; // Longitud del código
+        var codigo = '';
+        
+        for (var i = 0; i < longitud; i++) {
+            codigo += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+        }
+        
+        // Asignar al campo de código de producto
+        document.getElementById('codproducto').value = codigo;
+    }
+    // ========== FIN FUNCIÓN PARA GENERAR CÓDIGO ALEATORIO ==========
     </script>
     <!-- FIN SCRIPT PRODUCTOS COMPUESTOS -->
     
