@@ -9875,7 +9875,8 @@ $infoCaja = $pre->BuscarInfoCaja();
         <th>Nº</th>
         <th>Código Producto</th>
         <th>Nombre Producto</th>
-        <th>% Comisión</th>
+        <th>Tipo Comisión</th>
+        <th>Valor Comisión</th>
         <th>Cantidad Vendida</th>
         <th>Precio Unit.</th>
         <th>Total Venta</th>
@@ -9895,12 +9896,23 @@ $simbolo = ($reg[$i]['simbolo'] == "" ? "" : "<strong>".$reg[$i]['simbolo']."</s
 $TotalCantidad  += $reg[$i]['cantidad_vendida'];
 $TotalVenta     += $reg[$i]['total_venta'];
 $TotalComision  += $reg[$i]['comision_generada'];
+
+// Formatear valor de comisión según tipo
+$tipoComision = $reg[$i]['tipo_comision'];
+if ($tipoComision == 'PORCENTAJE') {
+    $valorComisionStr = number_format($reg[$i]['comision_venta'], 2, '.', ',') . ' %';
+    $badgeClass = 'badge-info';
+} else {
+    $valorComisionStr = $simbolo . " " . number_format($reg[$i]['comision_venta'], 2, '.', ',');
+    $badgeClass = 'badge-warning';
+}
 ?>
       <tr>
         <td><?php echo $a; ?></td>
         <td><?php echo $reg[$i]['codproducto']; ?></td>
         <td><?php echo $reg[$i]['producto']; ?></td>
-        <td class="text-center"><?php echo number_format($reg[$i]['comision_venta'], 2, '.', ','); ?> %</td>
+        <td class="text-center"><span class="badge <?php echo $badgeClass; ?>"><?php echo $tipoComision; ?></span></td>
+        <td class="text-center"><?php echo $valorComisionStr; ?></td>
         <td class="text-center"><?php echo number_format($reg[$i]['cantidad_vendida'], 2, '.', ','); ?></td>
         <td class="text-right"><?php echo $simbolo." ".number_format($reg[$i]['precio_unitario'], 2, '.', ','); ?></td>
         <td class="text-right suma_1"><?php echo $simbolo." ".number_format($reg[$i]['total_venta'], 2, '.', ','); ?></td>
@@ -9912,7 +9924,7 @@ $a++;
 ?>
     <tfoot>
       <tr>
-        <td colspan="4" class="text-right"><strong>TOTALES:</strong></td>
+        <td colspan="5" class="text-right"><strong>TOTALES:</strong></td>
         <td class="text-center"><strong><?php echo number_format($TotalCantidad, 2, '.', ','); ?></strong></td>
         <td></td>
         <td class="text-right"><strong><?php echo $simbolo." ".number_format($TotalVenta, 2, '.', ','); ?></strong></td>

@@ -1,32 +1,44 @@
 -- =====================================================
--- Script SQL para agregar campo de Comisión por Venta
+-- Script SQL para agregar campos de Comisión por Venta
 -- Fecha: 06-01-2026
--- Descripción: Agrega el campo comision_venta a la tabla productos
+-- Descripción: Agrega campos tipo_comision y comision_venta a la tabla productos
 -- =====================================================
 
+-- Agregar la columna tipo_comision a la tabla productos
+-- Define si la comisión es por porcentaje o valor fijo
+ALTER TABLE productos 
+ADD COLUMN tipo_comision VARCHAR(20) NOT NULL DEFAULT 'NINGUNA' 
+COMMENT 'Tipo de comisión: NINGUNA, PORCENTAJE o VALOR'
+AFTER descproducto;
+
 -- Agregar la columna comision_venta a la tabla productos
--- El campo almacena el porcentaje de comisión por venta del producto
+-- El campo almacena el valor de comisión (porcentaje o valor fijo según tipo_comision)
 ALTER TABLE productos 
 ADD COLUMN comision_venta DECIMAL(10,2) NOT NULL DEFAULT 0.00 
-COMMENT 'Porcentaje de comisión por venta del producto'
-AFTER descproducto;
+COMMENT 'Valor de comisión por venta del producto (porcentaje o valor fijo)'
+AFTER tipo_comision;
 
 -- =====================================================
 -- NOTAS:
--- - El campo es de tipo DECIMAL(10,2) para almacenar porcentajes con 2 decimales
--- - El valor por defecto es 0.00 (sin comisión)
--- - Se ubica después del campo descproducto para mantener orden lógico
--- - El valor representa un porcentaje (ej: 5.00 = 5%)
+-- - tipo_comision puede ser: 'NINGUNA', 'PORCENTAJE' o 'VALOR'
+-- - comision_venta es DECIMAL(10,2) para almacenar valores con 2 decimales
+-- - Si tipo_comision = 'PORCENTAJE': comision_venta representa % (ej: 5.00 = 5%)
+-- - Si tipo_comision = 'VALOR': comision_venta es el monto fijo en moneda
+-- - IMPORTANTE: Si tipo_comision = 'VALOR', el valor no puede ser mayor al precio de venta
 -- 
 -- Si necesitas verificar que se agregó correctamente:
 -- DESCRIBE productos;
 -- 
--- Para ver el valor de comisión de todos los productos:
--- SELECT codproducto, producto, comision_venta FROM productos;
+-- Para ver el tipo y valor de comisión de todos los productos:
+-- SELECT codproducto, producto, tipo_comision, comision_venta FROM productos;
 --
--- Ejemplo de consulta para calcular comisión de una venta:
--- SELECT p.producto, dv.cantidad, dv.precioventa, 
---        (dv.cantidad * dv.precioventa * p.comision_venta / 100) as comision_calculada
+-- Ejemplo de consulta para calcular comisión de una venta según el tipo:
+-- SELECT p.producto, dv.cantidad, dv.precioventa, p.tipo_comision, p.comision_venta,
+--        CASE 
+--          WHEN p.tipo_comision = 'PORCENTAJE' THEN (dv.cantidad * dv.precioventa * p.comision_venta / 100)
+--          WHEN p.tipo_comision = 'VALOR' THEN (dv.cantidad * p.comision_venta)
+--          ELSE 0
+--        END as comision_calculada
 -- FROM detalleventas dv
 -- INNER JOIN productos p ON dv.codproducto = p.codproducto
 -- =====================================================

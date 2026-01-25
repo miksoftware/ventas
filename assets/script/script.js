@@ -3558,6 +3558,12 @@ $('document').ready(function()
 			swal("Oops", "EL PRECIO DE COMPRA NO PUEDE SER MAYOR QUE EL PRECIO DE VENTA PUBLICO DEL PRODUCTO!", "error");
                return false;
  
+          } else if ($('#tipo_comision').val() == 'VALOR' && parseFloat($('#comision_venta').val() || 0) > parseFloat(publico)) {
+            
+			$("#comision_venta").focus();
+			swal("Oops", "EL VALOR DE COMISIÓN NO PUEDE SER MAYOR QUE EL PRECIO DE VENTA DEL PRODUCTO!", "error");
+               return false;
+ 
           } else {
 			
 		$.ajax({
@@ -3877,6 +3883,12 @@ $('document').ready(function()
             
 			$("#preciocompra").focus();
 			swal("Oops", "EL PRECIO DE COMPRA NO PUEDE SER MAYOR QUE EL PRECIO DE VENTA PUBLICO DEL PRODUCTO!", "error");
+               return false;
+ 
+          } else if ($('#tipo_comision').val() == 'VALOR' && parseFloat($('#comision_venta').val() || 0) > parseFloat(publico)) {
+            
+			$("#comision_venta").focus();
+			swal("Oops", "EL VALOR DE COMISIÓN NO PUEDE SER MAYOR QUE EL PRECIO DE VENTA DEL PRODUCTO!", "error");
                return false;
  
           } else {

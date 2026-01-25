@@ -9019,7 +9019,7 @@ public function RegistrarProductos()
 	if($num == 0)
 	{
 	    ##################### REGISTRO DE PRODUCTO #####################
-	    $query = "INSERT INTO productos values (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+	    $query = "INSERT INTO productos values (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
     	$stmt = $this->dbh->prepare($query);
     	$stmt->bindParam(1, $codproducto);
     	$stmt->bindParam(2, $producto);
@@ -9048,19 +9048,21 @@ public function RegistrarProductos()
     	$stmt->bindParam(25, $stockminimo);
     	$stmt->bindParam(26, $ivaproducto);
     	$stmt->bindParam(27, $descproducto);
-    	$stmt->bindParam(28, $comision_venta);
-    	$stmt->bindParam(29, $codigobarra);
-    	$stmt->bindParam(30, $fechaelaboracion);
-    	$stmt->bindParam(31, $fechaoptimo);
-    	$stmt->bindParam(32, $fechamedio);
-    	$stmt->bindParam(33, $fechaminimo);
-    	$stmt->bindParam(34, $codproveedor);
-    	$stmt->bindParam(35, $stockteorico);
-    	$stmt->bindParam(36, $motivoajuste);
-    	$stmt->bindParam(37, $codsucursal);
-    	$stmt->bindParam(38, $tipo_producto);
+    	$stmt->bindParam(28, $tipo_comision);
+    	$stmt->bindParam(29, $comision_venta);
+    	$stmt->bindParam(30, $codigobarra);
+    	$stmt->bindParam(31, $fechaelaboracion);
+    	$stmt->bindParam(32, $fechaoptimo);
+    	$stmt->bindParam(33, $fechamedio);
+    	$stmt->bindParam(34, $fechaminimo);
+    	$stmt->bindParam(35, $codproveedor);
+    	$stmt->bindParam(36, $stockteorico);
+    	$stmt->bindParam(37, $motivoajuste);
+    	$stmt->bindParam(38, $codsucursal);
+    	$stmt->bindParam(39, $tipo_producto);
     	// producto_padre_id se bindea después de asignar su valor para manejar NULL correctamente
-    	$stmt->bindParam(40, $cantidad_conversion);
+    	$stmt->bindParam(41, $cantidad_conversion);
+    	$stmt->bindParam(42, $usa_inventario);
 
 		$codproducto      = limpiar($_POST["codproducto"]);
 		$producto         = limpiar($_POST["producto"]);
@@ -9112,6 +9114,7 @@ public function RegistrarProductos()
 		$stockminimo      = limpiar($_POST["modulo"] == 1 ? $_POST["stockminimo"] : "0.00");
 		$ivaproducto      = limpiar(decrypt($_POST["ivaproducto"]));
 		$descproducto     = limpiar($_POST["descproducto"]);
+		$tipo_comision    = limpiar(isset($_POST["tipo_comision"]) ? $_POST["tipo_comision"] : "NINGUNA");
 		$comision_venta   = limpiar(isset($_POST["comision_venta"]) ? $_POST["comision_venta"] : "0.00");
 		$codigobarra      = limpiar($_POST["codigobarra"]);
 		$codproveedor     = limpiar(decrypt($_POST["codproveedor"]));
@@ -9125,15 +9128,18 @@ public function RegistrarProductos()
 		$producto_padre_id = ($tipo_producto == "HIJO" && !empty($_POST["producto_padre_id"])) ? limpiar(decrypt($_POST["producto_padre_id"])) : null;
 		$cantidad_conversion = limpiar($tipo_producto == "HIJO" ? $_POST["cantidad_conversion"] : "1.00");
 		
+		// Campo para servicios (sin inventario)
+		$usa_inventario = limpiar(isset($_POST["usa_inventario"]) ? $_POST["usa_inventario"] : "SI");
+		
 		// Bindear producto_padre_id con el tipo correcto (NULL o INT)
 		if ($producto_padre_id === null) {
-			$stmt->bindValue(39, null, PDO::PARAM_NULL);
+			$stmt->bindValue(40, null, PDO::PARAM_NULL);
 		} else {
-			$stmt->bindValue(39, $producto_padre_id, PDO::PARAM_INT);
+			$stmt->bindValue(40, $producto_padre_id, PDO::PARAM_INT);
 		}
 		
-		// Si es producto HIJO, forzar existencia a 0
-		if ($tipo_producto == "HIJO") {
+		// Si es producto HIJO o servicio sin inventario, forzar existencia a 0
+		if ($tipo_producto == "HIJO" || $usa_inventario == "NO") {
 			$existencia = "0.00";
 		}
 		
@@ -9141,8 +9147,8 @@ public function RegistrarProductos()
 		##################### REGISTRO DE PRODUCTO #####################
 
 		##################### REGISTRAMOS DATOS DE PRODUCTOS EN KARDEX #####################
-		// Solo registrar kardex si NO es producto HIJO (los hijos no manejan stock)
-		if ($tipo_producto != "HIJO") {
+		// Solo registrar kardex si NO es producto HIJO y SI usa inventario
+		if ($tipo_producto != "HIJO" && $usa_inventario == "SI") {
 		$query = "INSERT INTO kardex values (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 		$stmt = $this->dbh->prepare($query);
 		$stmt->bindParam(1, $codproceso);
@@ -11260,6 +11266,9 @@ public function ProductosPorId()
 	productos.tipo_producto,
 	productos.producto_padre_id,
 	productos.cantidad_conversion,
+	productos.tipo_comision,
+	productos.comision_venta,
+	productos.usa_inventario,
 	producto_padre.codproducto AS codproducto_padre,
 	producto_padre.producto AS producto_padre_nombre,
 	CONCAT(producto_padre.codproducto, ' - ', producto_padre.producto) AS producto_padre_nombre,
@@ -11600,6 +11609,7 @@ public function ActualizarProductos()
 		." stockminimo = ?, "
 		." ivaproducto = ?, "
 		." descproducto = ?, "
+		." tipo_comision = ?, "
 		." comision_venta = ?, "
 		." codigobarra = ?, "
 		." fechaelaboracion = ?, "
@@ -11609,7 +11619,8 @@ public function ActualizarProductos()
 		." codproveedor = ?, "
 		." tipo_producto = ?, "
 		." producto_padre_id = ?, "
-		." cantidad_conversion = ? "
+		." cantidad_conversion = ?, "
+		." usa_inventario = ? "
 		." WHERE "
 		." idproducto = ?;
 		";
@@ -11640,17 +11651,19 @@ public function ActualizarProductos()
 		$stmt->bindParam(24, $stockminimo);
 		$stmt->bindParam(25, $ivaproducto);
 		$stmt->bindParam(26, $descproducto);
-		$stmt->bindParam(27, $comision_venta);
-		$stmt->bindParam(28, $codigobarra);
-		$stmt->bindParam(29, $fechaelaboracion);
-		$stmt->bindParam(30, $fechaoptimo);
-		$stmt->bindParam(31, $fechamedio);
-		$stmt->bindParam(32, $fechaminimo);
-		$stmt->bindParam(33, $codproveedor);
-		$stmt->bindParam(34, $tipo_producto);
+		$stmt->bindParam(27, $tipo_comision);
+		$stmt->bindParam(28, $comision_venta);
+		$stmt->bindParam(29, $codigobarra);
+		$stmt->bindParam(30, $fechaelaboracion);
+		$stmt->bindParam(31, $fechaoptimo);
+		$stmt->bindParam(32, $fechamedio);
+		$stmt->bindParam(33, $fechaminimo);
+		$stmt->bindParam(34, $codproveedor);
+		$stmt->bindParam(35, $tipo_producto);
 		// producto_padre_id se bindea después de asignar su valor para manejar NULL correctamente
-		$stmt->bindParam(36, $cantidad_conversion);
-		$stmt->bindParam(37, $idproducto);
+		$stmt->bindParam(37, $cantidad_conversion);
+		$stmt->bindParam(38, $usa_inventario);
+		$stmt->bindParam(39, $idproducto);
 
 		$producto         = limpiar($_POST["producto"]);
 		$descripcion      = limpiar($_POST["descripcion"]);
@@ -11679,21 +11692,25 @@ public function ActualizarProductos()
 		$producto_padre_id = ($tipo_producto == "HIJO" && !empty($_POST["producto_padre_id"])) ? limpiar(decrypt($_POST["producto_padre_id"])) : null;
 		$cantidad_conversion = limpiar($tipo_producto == "HIJO" ? $_POST["cantidad_conversion"] : "1.00");
 		
+		// Campo para servicios (sin inventario)
+		$usa_inventario = limpiar(isset($_POST["usa_inventario"]) ? $_POST["usa_inventario"] : "SI");
+		
 		// Bindear producto_padre_id con el tipo correcto (NULL o INT)
 		if ($producto_padre_id === null) {
-			$stmt->bindValue(35, null, PDO::PARAM_NULL);
+			$stmt->bindValue(36, null, PDO::PARAM_NULL);
 		} else {
-			$stmt->bindValue(35, $producto_padre_id, PDO::PARAM_INT);
+			$stmt->bindValue(36, $producto_padre_id, PDO::PARAM_INT);
 		}
 		
-		// Si es producto HIJO, forzar existencia a 0
-		$existencia       = limpiar($tipo_producto == "HIJO" ? "0.00" : $_POST["existencia"]);
+		// Si es producto HIJO o servicio sin inventario, forzar existencia a 0
+		$existencia       = limpiar(($tipo_producto == "HIJO" || $usa_inventario == "NO") ? "0.00" : $_POST["existencia"]);
 		
 		$stockoptimo      = limpiar($_POST["stockoptimo"]);
 		$stockmedio       = limpiar($_POST["stockmedio"]);
 		$stockminimo      = limpiar($_POST["stockminimo"]);
 		$ivaproducto      = limpiar(decrypt($_POST["ivaproducto"]));
 		$descproducto     = limpiar($_POST["descproducto"]);
+		$tipo_comision    = limpiar(isset($_POST["tipo_comision"]) ? $_POST["tipo_comision"] : "NINGUNA");
 		$comision_venta   = limpiar(isset($_POST["comision_venta"]) ? $_POST["comision_venta"] : "0.00");
 		$codigobarra      = limpiar($_POST["codigobarra"]);
 		$fechaelaboracion = limpiar($_POST['fechaelaboracion'] == '' ? "0000-00-00" : date("Y-m-d",strtotime($_POST['fechaelaboracion'])));
@@ -33980,6 +33997,7 @@ public function RegistrarVentas()
 			productos.tipo_producto,
 			productos.producto_padre_id,
 			productos.cantidad_conversion,
+			productos.usa_inventario,
 			producto_padre.existencia AS padre_existencia
 			FROM productos 
 			LEFT JOIN productos AS producto_padre ON productos.producto_padre_id = producto_padre.idproducto
@@ -33995,7 +34013,13 @@ public function RegistrarVentas()
 			$tipoProducto = isset($row['tipo_producto']) ? $row['tipo_producto'] : 'SIMPLE';
 			$cantidadConversion = isset($row['cantidad_conversion']) ? $row['cantidad_conversion'] : 1;
 			$padreExistencia = isset($row['padre_existencia']) ? $row['padre_existencia'] : 0;
+			$usaInventario = isset($row['usa_inventario']) ? $row['usa_inventario'] : 'SI';
 			$cantidad     = $v[$i]['cantidad'];
+
+			// Si es servicio (no usa inventario), no validar existencia
+			if ($usaInventario == 'NO') {
+				continue; // Saltar validación para servicios
+			}
 
 			// Si es producto HIJO, validamos contra el stock del PADRE
 			if ($tipoProducto == 'HIJO' && $row['producto_padre_id']) {
@@ -34558,11 +34582,17 @@ public function RegistrarVentas()
 		$padreIdProductoBD = isset($row['padre_idproducto']) ? $row['padre_idproducto'] : null;
 		$padreCodProductoBD = isset($row['padre_codproducto']) ? $row['padre_codproducto'] : null;
 		$padreExistenciaBD = isset($row['padre_existencia']) ? $row['padre_existencia'] : 0;
+		$usaInventarioBD = isset($row['usa_inventario']) ? $row['usa_inventario'] : 'SI';
 	    ################ VERIFICO LA EXISTENCIA DEL PRODUCTO EN ALMACEN ################
 
 		##################### ACTUALIZO LA EXISTENCIA DEL ALMACEN ####################
+		// Si es servicio (no usa inventario), no actualizar stock ni registrar kardex
+		if ($usaInventarioBD == 'NO') {
+			// Servicio: no hacer nada con el inventario
+			$codproductoKardex = null; // Marcador para no registrar kardex
+		}
 		// Si es producto HIJO, descontamos del PADRE
-		if ($tipoProductoBD == 'HIJO' && $padreIdProductoBD) {
+		elseif ($tipoProductoBD == 'HIJO' && $padreIdProductoBD) {
 			$cantidadDescontar = number_format($detalle[$i]['cantidad'] * $cantidadConversionBD, 2, '.', '');
 			$sql = "UPDATE productos set "
 			." existencia = ? "
@@ -34604,6 +34634,8 @@ public function RegistrarVentas()
 	    ##################### ACTUALIZO LA EXISTENCIA DEL ALMACEN ####################
 
 	    ############### REGISTRAMOS LOS DATOS DE PRODUCTOS EN KARDEX ###############
+	    // Solo registrar kardex si no es un servicio (usa inventario)
+	    if ($codproductoKardex !== null) {
 	    // Registramos el kardex en el producto que maneja el stock (PADRE si es HIJO, o el mismo si es SIMPLE/PADRE)
 	    $query = "INSERT INTO kardex values (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 		$stmt = $this->dbh->prepare($query);
@@ -34641,6 +34673,7 @@ public function RegistrarVentas()
 		$codsucursal   = limpiar(decrypt($_POST['codsucursal']));
     	$codigo        = limpiar($_SESSION["codigo"]);
 		$stmt->execute();
+	    } // Fin de condición para servicios
 		############### REGISTRAMOS LOS DATOS DE PRODUCTOS EN KARDEX ###############
 
     } elseif(limpiar($detalle[$i]['tipodetalle']) == 2){ // SI EL DETALLE ES UN COMBO
@@ -40505,11 +40538,16 @@ public function BuscarComisionesxCajas()
 	$sql = "SELECT 
 		p.codproducto,
 		p.producto,
+		p.tipo_comision,
 		p.comision_venta,
 		SUM(dv.cantidad) as cantidad_vendida,
 		AVG(dv.precioventa) as precio_unitario,
 		SUM(dv.cantidad * dv.precioventa) as total_venta,
-		SUM((dv.cantidad * dv.precioventa) * (p.comision_venta / 100)) as comision_generada,
+		CASE 
+			WHEN p.tipo_comision = 'PORCENTAJE' THEN SUM((dv.cantidad * dv.precioventa) * (p.comision_venta / 100))
+			WHEN p.tipo_comision = 'VALOR' THEN SUM(dv.cantidad * p.comision_venta)
+			ELSE 0
+		END as comision_generada,
 		s.nomsucursal,
 		tm.simbolo
 	FROM detalleventas dv
@@ -40521,8 +40559,9 @@ public function BuscarComisionesxCajas()
 	AND v.codcaja = ?
 	AND DATE_FORMAT(v.fechaventa,'%Y-%m-%d') BETWEEN ? AND ?
 	AND v.statusventa != 'ANULADA'
+	AND p.tipo_comision != 'NINGUNA'
 	AND p.comision_venta > 0
-	GROUP BY p.codproducto, p.producto, p.comision_venta, s.nomsucursal, tm.simbolo
+	GROUP BY p.codproducto, p.producto, p.tipo_comision, p.comision_venta, s.nomsucursal, tm.simbolo
 	ORDER BY comision_generada DESC";
 	
 	$stmt = $this->dbh->prepare($sql);

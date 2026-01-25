@@ -269,6 +269,26 @@ elseif(isset($_POST["proceso"]) and $_POST["proceso"]=="update")
         </div>
         <!-- FIN SECCION PRODUCTOS COMPUESTOS -->
 
+        <!-- SECCION TIPO SERVICIO -->
+        <div class="row" style="background-color: #e7f3ff; padding: 10px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #007bff;">
+            <div class="col-md-12">
+                <h5 style="color: #007bff; margin-bottom: 15px;"><i class="fa fa-cogs"></i> Tipo de Producto/Servicio</h5>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group has-feedback">
+                    <label class="control-label">¿Usa Inventario?: <span class="symbol required"></span></label>
+                    <i class="fa fa-bars form-control-feedback"></i>
+                    <select style="color:#000;font-weight:bold;" name="usa_inventario" id="usa_inventario" class="form-control" onChange="toggleUsaInventario();" required="" aria-required="true">
+                    <option value="SI"<?php if (!isset($reg[0]['usa_inventario']) || $reg[0]['usa_inventario'] == 'SI') { echo " selected"; } ?>>SI - Producto con Inventario</option>
+                    <option value="NO"<?php if (isset($reg[0]['usa_inventario']) && $reg[0]['usa_inventario'] == 'NO') { echo " selected"; } ?>>NO - Servicio (sin inventario)</option>
+                    </select>
+                    <small class="text-muted">Seleccione NO para servicios que no manejan stock</small>
+                </div>
+            </div>
+        </div>
+        <!-- FIN SECCION TIPO SERVICIO -->
+
+
         <div class="row">
             <div class="col-md-3">
                 <div class="form-group has-feedback">
@@ -589,6 +609,8 @@ elseif(isset($_POST["proceso"]) and $_POST["proceso"]=="update")
             </div>
         </div>
 
+        <!-- SECCION INVENTARIO (se oculta para servicios) -->
+        <div id="seccion_inventario">
         <div class="row">
             <div class="col-md-3">
                 <div class="form-group has-feedback">
@@ -598,7 +620,7 @@ elseif(isset($_POST["proceso"]) and $_POST["proceso"]=="update")
                 </div>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-3" id="div_existencia">
                 <div class="form-group has-feedback">
                     <label class="control-label">Existencia: <span class="symbol required"></span></label>
                     <input type="hidden" class="form-control" name="existencia2" id="existencia2" <?php if (isset($reg[0]['existencia'])) { ?> value="<?php echo $reg[0]['existencia']; ?>" <?php } ?> />
@@ -607,7 +629,7 @@ elseif(isset($_POST["proceso"]) and $_POST["proceso"]=="update")
                 </div>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-3" id="div_stockoptimo">
                 <div class="form-group has-feedback">
                     <label class="control-label">Stock Óptimo: </label>
                     <input type="text" class="form-control" name="stockoptimo" id="stockoptimo" onKeyUp="this.value=this.value.toUpperCase();" placeholder="Ingrese Stock Óptimo" autocomplete="off" <?php if (isset($reg[0]['stockoptimo'])) { ?> value="<?php echo $reg[0]['stockoptimo']; ?>" <?php } else { ?> value="0.00" <?php } ?> required="" aria-required="true"/>  
@@ -615,7 +637,7 @@ elseif(isset($_POST["proceso"]) and $_POST["proceso"]=="update")
                 </div>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-3" id="div_stockmedio">
                 <div class="form-group has-feedback">
                     <label class="control-label">Stock Medio: </label>
                     <input type="text" class="form-control" name="stockmedio" id="stockmedio" onKeyUp="this.value=this.value.toUpperCase();" placeholder="Ingrese Stock Medio" autocomplete="off" <?php if (isset($reg[0]['stockmedio'])) { ?> value="<?php echo $reg[0]['stockmedio']; ?>" <?php } else { ?> value="0.00" <?php } ?> required="" aria-required="true"/>  
@@ -625,7 +647,7 @@ elseif(isset($_POST["proceso"]) and $_POST["proceso"]=="update")
         </div>
 
         <div class="row">
-            <div class="col-md-3">
+            <div class="col-md-3" id="div_stockminimo">
                 <div class="form-group has-feedback">
                     <label class="control-label">Stock Minimo: </label>
                     <input type="text" class="form-control" name="stockminimo" id="stockminimo" onKeyUp="this.value=this.value.toUpperCase();" placeholder="Ingrese Stock Minimo" autocomplete="off" <?php if (isset($reg[0]['stockminimo'])) { ?> value="<?php echo $reg[0]['stockminimo']; ?>" <?php } else { ?> value="0.00" <?php } ?> required="" aria-required="true"/>  
@@ -689,17 +711,44 @@ elseif(isset($_POST["proceso"]) and $_POST["proceso"]=="update")
                 </div>
             </div>
         </div>
+        </div>
+        <!-- FIN SECCION INVENTARIO -->
 
-        <div class="row">
-            <div class="col-md-3">
+        <!-- SECCION COMISIONES -->
+        <div class="row" style="background-color: #fff3cd; padding: 10px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #ffc107;">
+            <div class="col-md-12">
+                <h5 style="color: #856404; margin-bottom: 15px;"><i class="fa fa-money"></i> Configuración de Comisión por Venta</h5>
+            </div>
+            <div class="col-md-4">
                 <div class="form-group has-feedback">
-                    <label class="control-label">Comisión por Venta (%): </label>
-                    <input type="text" class="form-control" name="comision_venta" id="comision_venta" onKeyPress="EvaluateText('%f', this);" onBlur="this.value = NumberFormat(this.value, '2', '.', '')" placeholder="Ingrese % de Comisión" autocomplete="off" <?php if (isset($reg[0]['comision_venta'])) { ?> value="<?php echo number_format($reg[0]['comision_venta'], 2, '.', ''); ?>" <?php } else { ?> value="0.00" <?php } ?> required="" aria-required="true"/>  
-                    <i class="fa fa-percent form-control-feedback"></i>
-                    <small class="text-muted">Porcentaje de comisión para el vendedor</small>
+                    <label class="control-label">Tipo de Comisión: </label>
+                    <i class="fa fa-bars form-control-feedback"></i>
+                    <select style="color:#000;font-weight:bold;" name="tipo_comision" id="tipo_comision" class="form-control" onChange="toggleTipoComision(true);">
+                    <option value="NINGUNA"<?php if (!isset($reg[0]['tipo_comision']) || $reg[0]['tipo_comision'] == 'NINGUNA') { echo " selected"; } ?>>SIN COMISIÓN</option>
+                    <option value="PORCENTAJE"<?php if (isset($reg[0]['tipo_comision']) && $reg[0]['tipo_comision'] == 'PORCENTAJE') { echo " selected"; } ?>>PORCENTAJE (%)</option>
+                    <option value="VALOR"<?php if (isset($reg[0]['tipo_comision']) && $reg[0]['tipo_comision'] == 'VALOR') { echo " selected"; } ?>>VALOR FIJO</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-4" id="div_comision_valor">
+                <div class="form-group has-feedback">
+                    <label class="control-label" id="label_comision">Valor de Comisión: </label>
+                    <input type="text" class="form-control" name="comision_venta" id="comision_venta" onKeyPress="EvaluateText('%f', this);" onBlur="this.value = NumberFormat(this.value, '2', '.', ''); validarComisionValor();" placeholder="Ingrese valor de comisión" autocomplete="off" <?php if (isset($reg[0]['comision_venta'])) { ?> value="<?php echo number_format($reg[0]['comision_venta'], 2, '.', ''); ?>" <?php } else { ?> value="0.00" <?php } ?> required="" aria-required="true"/>  
+                    <i class="fa fa-money form-control-feedback" id="icon_comision"></i>
+                    <small class="text-muted" id="help_comision">Ingrese el valor o porcentaje de comisión</small>
+                </div>
+            </div>
+
+            <div class="col-md-4" id="div_precio_referencia" style="display:none;">
+                <div class="form-group">
+                    <label class="control-label">Precio Venta (Referencia): </label>
+                    <input type="text" class="form-control" id="precio_referencia" readonly style="background-color:#e9ecef;" value="0.00"/>
+                    <small class="text-danger" id="warning_comision" style="display:none;"><i class="fa fa-warning"></i> La comisión no puede ser mayor al precio de venta</small>
                 </div>
             </div>
         </div>
+        <!-- FIN SECCION COMISIONES -->
 
         <div class="row">
             <div class="col-md-3">
@@ -717,6 +766,7 @@ elseif(isset($_POST["proceso"]) and $_POST["proceso"]=="update")
                     <i class="fa fa-calendar form-control-feedback"></i>
                 </div>
             </div>
+
 
             <div class="col-md-3">
                 <div class="form-group has-feedback">
@@ -955,7 +1005,127 @@ elseif(isset($_POST["proceso"]) and $_POST["proceso"]=="update")
     // Ejecutar al cargar la página para mantener estado
     document.addEventListener('DOMContentLoaded', function() {
         toggleProductoCompuesto();
+        toggleTipoComision();
+        toggleUsaInventario();
     });
+
+    // ========== FUNCIONES PARA USA INVENTARIO (SERVICIOS) ==========
+    
+    // Función para mostrar/ocultar campos de inventario según si usa inventario o no
+    function toggleUsaInventario() {
+        var usaInventario = document.getElementById('usa_inventario').value;
+        var divExistencia = document.getElementById('div_existencia');
+        var divStockOptimo = document.getElementById('div_stockoptimo');
+        var divStockMedio = document.getElementById('div_stockmedio');
+        var divStockMinimo = document.getElementById('div_stockminimo');
+        var existenciaInput = document.getElementById('existencia');
+        var existencia2Input = document.getElementById('existencia2');
+        
+        if (usaInventario === 'NO') {
+            // Ocultar campos de inventario para servicios
+            if(divExistencia) divExistencia.style.display = 'none';
+            if(divStockOptimo) divStockOptimo.style.display = 'none';
+            if(divStockMedio) divStockMedio.style.display = 'none';
+            if(divStockMinimo) divStockMinimo.style.display = 'none';
+            // Poner existencia en 0 (no aplica para servicios)
+            if(existenciaInput) {
+                existenciaInput.value = '0';
+                existenciaInput.removeAttribute('required');
+            }
+            if(existencia2Input) existencia2Input.value = '0';
+        } else {
+            // Mostrar campos de inventario para productos normales
+            if(divExistencia) divExistencia.style.display = '';
+            if(divStockOptimo) divStockOptimo.style.display = '';
+            if(divStockMedio) divStockMedio.style.display = '';
+            if(divStockMinimo) divStockMinimo.style.display = '';
+            if(existenciaInput) existenciaInput.setAttribute('required', 'required');
+        }
+    }
+
+    // ========== FUNCIONES PARA TIPO DE COMISIÓN ==========
+    
+    // Función para mostrar/ocultar y cambiar etiquetas según tipo de comisión
+    function toggleTipoComision(fromUserChange) {
+        var tipoComision = document.getElementById('tipo_comision').value;
+        var divComisionValor = document.getElementById('div_comision_valor');
+        var divPrecioRef = document.getElementById('div_precio_referencia');
+        var labelComision = document.getElementById('label_comision');
+        var iconComision = document.getElementById('icon_comision');
+        var helpComision = document.getElementById('help_comision');
+        var comisionInput = document.getElementById('comision_venta');
+        
+        if (tipoComision === 'NINGUNA') {
+            // Ocultar campos de comisión
+            divComisionValor.style.display = 'none';
+            divPrecioRef.style.display = 'none';
+            // Solo resetear si el usuario cambió el tipo (no al cargar la página)
+            if (fromUserChange) {
+                comisionInput.value = '0.00';
+            }
+        } else if (tipoComision === 'PORCENTAJE') {
+            // Mostrar como porcentaje
+            divComisionValor.style.display = '';
+            divPrecioRef.style.display = 'none';
+            labelComision.innerHTML = 'Porcentaje de Comisión (%): ';
+            iconComision.className = 'fa fa-percent form-control-feedback';
+            helpComision.innerHTML = 'Porcentaje de comisión sobre el precio de venta';
+            comisionInput.placeholder = 'Ej: 5.00 para 5%';
+        } else if (tipoComision === 'VALOR') {
+            // Mostrar como valor fijo
+            divComisionValor.style.display = '';
+            divPrecioRef.style.display = '';
+            labelComision.innerHTML = 'Valor Fijo de Comisión: ';
+            iconComision.className = 'fa fa-money form-control-feedback';
+            helpComision.innerHTML = 'Monto fijo de comisión por unidad vendida';
+            comisionInput.placeholder = 'Ej: 10.00';
+            actualizarPrecioReferencia();
+        }
+    }
+    
+    // Función para actualizar el precio de referencia
+    function actualizarPrecioReferencia() {
+        var precioPublico = document.getElementById('precioxpublico');
+        var precioRef = document.getElementById('precio_referencia');
+        if (precioPublico && precioRef) {
+            precioRef.value = precioPublico.value || '0.00';
+        }
+        validarComisionValor();
+    }
+    
+    // Validar que la comisión no sea mayor al precio de venta (solo para VALOR)
+    function validarComisionValor() {
+        var tipoComision = document.getElementById('tipo_comision').value;
+        if (tipoComision !== 'VALOR') return true;
+        
+        var comision = parseFloat(document.getElementById('comision_venta').value) || 0;
+        var precioVenta = parseFloat(document.getElementById('precioxpublico').value) || 0;
+        var warning = document.getElementById('warning_comision');
+        var comisionInput = document.getElementById('comision_venta');
+        
+        if (comision > precioVenta && precioVenta > 0) {
+            warning.style.display = '';
+            comisionInput.style.borderColor = '#dc3545';
+            return false;
+        } else {
+            warning.style.display = 'none';
+            comisionInput.style.borderColor = '';
+            return true;
+        }
+    }
+    
+    // Agregar listener al precio de venta para actualizar referencia
+    document.addEventListener('DOMContentLoaded', function() {
+        var precioPublico = document.getElementById('precioxpublico');
+        if (precioPublico) {
+            precioPublico.addEventListener('blur', function() {
+                actualizarPrecioReferencia();
+            });
+        }
+        // Inicializar estado de campos de comisión
+        toggleTipoComision();
+    });
+    // ========== FIN FUNCIONES PARA TIPO DE COMISIÓN ==========
     </script>
     <!-- FIN SCRIPT PRODUCTOS COMPUESTOS -->
     
