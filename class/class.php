@@ -11110,7 +11110,8 @@ public function ListarProductosModal()
     LEFT JOIN productos AS padre ON productos.producto_padre_id = padre.idproducto
     WHERE productos.codsucursal = '".limpiar($_SESSION["codsucursal"])."'
     AND (
-        productos.existencia != 0.00 
+        productos.usa_inventario = 'NO'
+        OR productos.existencia != 0.00 
         OR (productos.tipo_producto = 'HIJO' AND productos.producto_padre_id IS NOT NULL AND padre.existencia > 0)
     )";
 	foreach ($this->dbh->query($sql) as $row)
