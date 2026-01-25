@@ -17032,6 +17032,104 @@ function TablaListarComisionxVentas()
 }
 ########################## FUNCION LISTAR COMISION POR VENTAS ##############################
 
+########################## FUNCION LISTAR COMISIONES POR CAJAS ##############################
+function TablaListarComisionesxCajas()
+{
+    $tra = new Login();
+    $reg = $tra->BuscarComisionesxCajas();
+    
+    // Obtener info de la caja
+    $infoCaja = $tra->BuscarInfoCaja();
+    
+    $this->SetFont('Courier','B',14);  
+    $this->SetTextColor(3,3,3);
+    $this->Cell(335,10,'LISTADO DE COMISIONES POR PRODUCTOS VENDIDOS',0,0,'C');
+
+    $this->Ln();
+    if(!empty($infoCaja)){
+        $this->Cell(335,6,"CAJA: ".utf8_decode($infoCaja[0]["nrocaja"]." - ".$infoCaja[0]["nomcaja"]),0,0,'L');
+        $this->Ln();
+        $this->Cell(335,6,"CAJERO: ".utf8_decode($infoCaja[0]["nombres"]),0,0,'L');
+    }
+    $this->Ln();
+    $this->Cell(335,6,"DESDE: ".date("d/m/Y", strtotime($_GET["desde"])),0,0,'L');
+    $this->Ln();
+    $this->Cell(335,6,"HASTA: ".date("d/m/Y", strtotime($_GET["hasta"])),0,0,'L');
+
+    $this->Ln(10);
+    $this->SetFont('courier','B',10);
+    $this->SetTextColor(255,255,255);
+    $this->SetFillColor(255,118,118);
+    $this->Cell(15,8,'N',1,0,'C', True);
+    $this->Cell(40,8,'CODIGO',1,0,'C', True);
+    $this->Cell(100,8,'PRODUCTO',1,0,'C', True);
+    $this->Cell(35,8,'TIPO COMIS.',1,0,'C', True);
+    $this->Cell(30,8,'VALOR COM.',1,0,'C', True);
+    $this->Cell(25,8,'CANT. VEND.',1,0,'C', True);
+    $this->Cell(35,8,'TOTAL VENTA',1,0,'C', True);
+    $this->Cell(35,8,'COMISION GEN.',1,1,'C', True);
+    
+    if($reg==""){
+        $this->SetFont('Courier','',10);
+        $this->SetTextColor(3,3,3);
+        $this->Cell(335,10,'No se encontraron productos con comision en el periodo seleccionado',0,0,'C');
+    } else {
+ 
+        $this->SetWidths(array(15,40,100,35,30,25,35,35));
+
+        $a = 1;
+        $TotalVenta = 0;
+        $TotalComision = 0;
+
+        for($i=0;$i<sizeof($reg);$i++){
+            $simbolo = ($reg[$i]['simbolo'] == "" ? "" : $reg[$i]['simbolo']);
+            
+            $tipoComision = $reg[$i]['tipo_comision'];
+            $valorComision = $reg[$i]['comision_venta'];
+            if($tipoComision == 'PORCENTAJE'){
+                $valorComisionStr = number_format($valorComision, 2, '.', ',')." %";
+            } else {
+                $valorComisionStr = $simbolo.number_format($valorComision, 2, '.', ',');
+            }
+
+            $TotalVenta += $reg[$i]['total_venta'];
+            $TotalComision += $reg[$i]['comision_generada'];
+
+            $this->SetFont('Courier','',10);  
+            $this->SetTextColor(3,3,3);
+            $this->Row(array(
+                $a++,
+                utf8_decode($reg[$i]["codproducto"]),
+                utf8_decode($reg[$i]['producto']),
+                utf8_decode($tipoComision),
+                utf8_decode($valorComisionStr),
+                utf8_decode(number_format($reg[$i]['cantidad_vendida'], 2, '.', ',')),
+                utf8_decode($simbolo.number_format($reg[$i]['total_venta'], 2, '.', ',')),
+                utf8_decode($simbolo.number_format($reg[$i]['comision_generada'], 2, '.', ','))
+            ));
+        }
+   
+        $this->Cell(245,5,'',0,0,'C');
+        $this->SetFont('courier','B',10);
+        $this->SetTextColor(3,3,3);
+        $this->CellFitSpace(35,5,utf8_decode($simbolo.number_format($TotalVenta, 2, '.', ',')),0,0,'L');
+        $this->CellFitSpace(35,5,utf8_decode($simbolo.number_format($TotalComision, 2, '.', ',')),0,0,'L');
+        $this->Ln();
+    }
+
+    $this->Ln(12); 
+    $this->SetFont('courier','B',10);
+    $this->Cell(5,6,'',0,0,'');
+    $this->Cell(200,6,'ELABORADO: '.utf8_decode($_SESSION["nombres"]),0,0,'');
+    $this->Cell(125,6,'RECIBIDO:_____________________________________',0,0,'');
+    $this->Ln();
+    $this->Cell(5,6,'',0,0,'');
+    $this->Cell(200,6,'FECHA/HORA: '.date('d-m-Y H:i:s'),0,0,'');
+    $this->Cell(125,6,'',0,0,'');
+    $this->Ln(4);
+}
+########################## FUNCION LISTAR COMISIONES POR CAJAS ##############################
+
 ########################## FUNCION LISTAR DETALLES VENTAS POR CONDICIONES ##############################
 function TablaListarDetallesVentasxCondiciones()
 {

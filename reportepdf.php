@@ -803,6 +803,11 @@ $casos = [
     'func'    => 'TablaListarNotasxClientes',
     'output'  => ['Listado de Notas de Creditos x Clientes.pdf', 'I'],
   ],
+  'COMISIONESXCAJAS'        => [
+    'medidas' => ['L', 'mm', 'LEGAL'],
+    'func'    => 'TablaListarComisionesxCajas',
+    'output'  => ['Listado de Comisiones por Cajas.pdf', 'I'],
+  ],
 ];
 
 
