@@ -197,7 +197,27 @@ elseif(isset($_POST["proceso"]) and $_POST["proceso"]=="saveajustestock")
                                 <input type="file" class="btn btn-default" data-original-title="Suba su Archivo CSV" data-rel="tooltip" placeholder="Suba su Imagen" name="sel_file" id="sel_file" autocomplete="off" required="" aria-required="true">
                                 </span>
                                 <a href="#" class="input-group-addon btn btn-dark fileinput-exists" data-dismiss="fileinput"><i class="fa fa-trash-o"></i> Quitar</a>
-                                </div><small><p>Para realizar la Carga masiva de Productos el archivo debe de ser extensión (CSV Delimitado por Comas). Debe de llevar la cantidad de filas y columnas explicadas para la Carga exitosa de los registros.<br></small>
+                                </div>
+                                <div class="alert alert-info mt-2">
+                                    <strong><i class="fa fa-info-circle"></i> Plantilla Simplificada (12 columnas):</strong><br>
+                                    <small>
+                                    <code>CODIGO;NOMBRE;DESCRIPCION;COD_FAMILIA;COD_MARCA;PRECIO_COMPRA;PRECIO_VENTA;EXISTENCIA;COD_IVA;USA_INVENTARIO;TIPO_COMISION;COMISION_VENTA</code><br><br>
+                                    <strong>Campos:</strong><br>
+                                    • <strong>CODIGO:</strong> Código único del producto<br>
+                                    • <strong>NOMBRE:</strong> Nombre del producto<br>
+                                    • <strong>DESCRIPCION:</strong> Descripción (puede estar vacío)<br>
+                                    • <strong>COD_FAMILIA:</strong> ID de la familia (número)<br>
+                                    • <strong>COD_MARCA:</strong> ID de la marca (0 si no aplica)<br>
+                                    • <strong>PRECIO_COMPRA:</strong> Precio de compra (ej: 10.00)<br>
+                                    • <strong>PRECIO_VENTA:</strong> Precio de venta al público<br>
+                                    • <strong>EXISTENCIA:</strong> Cantidad inicial (0 para servicios)<br>
+                                    • <strong>COD_IVA:</strong> ID del impuesto (0 = exento)<br>
+                                    • <strong>USA_INVENTARIO:</strong> SI o NO (NO = servicio)<br>
+                                    • <strong>TIPO_COMISION:</strong> NINGUNA, PORCENTAJE o VALOR<br>
+                                    • <strong>COMISION_VENTA:</strong> Valor de comisión (ej: 5.00)
+                                    </small>
+                                </div>
+                                <a href="bd-sql/plantilla_productos_simplificada.csv" class="btn btn-sm btn-success mt-2" download><i class="fa fa-download"></i> Descargar Plantilla de Ejemplo</a>
                                 <div id="divproducto"></div>   
                                 </div>
                             </div>

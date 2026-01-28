@@ -8816,6 +8816,7 @@ public function CargarProductos()
 
 	############## OBTENGO VALOR DE IMPUESTO #################
 	$sql = "SELECT
+	codimpuesto,
 	nomimpuesto, 
 	valorimpuesto
 	FROM impuestos 
@@ -8825,162 +8826,198 @@ public function CargarProductos()
 	{
 		$this->p[] = $row;
 	}
-	$nomimpuesto   = (empty($row['nomimpuesto']) ? "" : $row['nomimpuesto']);
-	$valorimpuesto = (empty($row['valorimpuesto']) ? "0.00" : $row['valorimpuesto']);
+	$codimpuestoDef  = (empty($row['codimpuesto']) ? "0" : $row['codimpuesto']);
+	$nomimpuesto     = (empty($row['nomimpuesto']) ? "" : $row['nomimpuesto']);
+	$valorimpuesto   = (empty($row['valorimpuesto']) ? "0.00" : $row['valorimpuesto']);
 	############## OBTENGO VALOR DE IMPUESTO #################
 
-    //$porcentaje=($_SESSION['acceso']=="administradorG" ? "0.00" : $_SESSION['porcentaje']);
-
-    //Aquí es donde seleccionamos nuestro csv
+    // Seleccionamos el archivo CSV
     $fname = $_FILES['sel_file']['name'];
-    //echo 'Cargando nombre del archivo: '.$fname.' ';
     $chk_ext = explode(".",$fname);
      
     if(strtolower(end($chk_ext)) == "csv")
     {
-    //si es correcto, entonces damos permisos de lectura para subir
+    // Damos permisos de lectura
     $filename = $_FILES['sel_file']['tmp_name'];
     $handle = fopen($filename, "r");
     $this->dbh->beginTransaction();
     
     $primera = true;
+    $linea = 0;
     while (($data = fgetcsv($handle, 1000, ";")) !== FALSE) {
-    // Evitamos la primer línea
+    $linea++;
+    // Evitamos la primer línea (encabezados)
     if ($primera){
       $primera = false;
       continue;
     }
-        //Insertamos los datos con los valores...
-        $query = "INSERT INTO productos values (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
-    	$stmt = $this->dbh->prepare($query);
-    	$stmt->bindParam(1, $codproducto);
-    	$stmt->bindParam(2, $producto);
-    	$stmt->bindParam(3, $descripcion);
-    	$stmt->bindParam(4, $imei);
-    	$stmt->bindParam(5, $condicion);
-    	$stmt->bindParam(6, $fabricante);
-    	$stmt->bindParam(7, $codfamilia);
-    	$stmt->bindParam(8, $codsubfamilia);
-    	$stmt->bindParam(9, $codmarca);
-    	$stmt->bindParam(10, $codmodelo);
-    	$stmt->bindParam(11, $codpresentacion);
-    	$stmt->bindParam(12, $codcolor);
-    	$stmt->bindParam(13, $codorigen);
-    	$stmt->bindParam(14, $year);
-    	$stmt->bindParam(15, $nroparte);
-    	$stmt->bindParam(16, $lote);
-    	$stmt->bindParam(17, $peso);
-    	$stmt->bindParam(18, $preciocompra);
-    	$stmt->bindParam(19, $precioxmayor);
-    	$stmt->bindParam(20, $precioxmenor);
-    	$stmt->bindParam(21, $precioxpublico);
-    	$stmt->bindParam(22, $existencia);
-    	$stmt->bindParam(23, $stockoptimo);
-    	$stmt->bindParam(24, $stockmedio);
-    	$stmt->bindParam(25, $stockminimo);
-    	$stmt->bindParam(26, $ivaproducto);
-    	$stmt->bindParam(27, $descproducto);
-    	$stmt->bindParam(28, $codigobarra);
-    	$stmt->bindParam(29, $fechaelaboracion);
-    	$stmt->bindParam(30, $fechaoptimo);
-    	$stmt->bindParam(31, $fechamedio);
-    	$stmt->bindParam(32, $fechaminimo);
-    	$stmt->bindParam(33, $codproveedor);
-    	$stmt->bindParam(34, $stockteorico);
-    	$stmt->bindParam(35, $motivoajuste);
-    	$stmt->bindParam(36, $codsucursal);
+    
+    // Validar que tenga al menos los campos requeridos
+    if (count($data) < 12) {
+        $this->dbh->rollBack();
+        fclose($handle);
+        echo "Error en línea $linea: Faltan campos. Se requieren 12 columnas.";
+        exit;
+    }
 
-    	$codproducto      = limpiar($data[0]);
-    	$producto         = utf8_encode($data[1]);
-    	$descripcion      = limpiar($data[2]);
-    	$imei             = limpiar($data[3]);
-    	$condicion        = limpiar($data[4]);
-    	$fabricante       = utf8_encode($data[5]);
-    	$codfamilia       = limpiar($data[6]);
-    	$codsubfamilia    = limpiar($data[7]);
-    	$codmarca         = limpiar($data[8]);
-    	$codmodelo        = limpiar($data[9]);
-    	$codpresentacion  = limpiar($data[10]);
-    	$codcolor         = limpiar($data[11]);
-    	$codorigen        = limpiar($data[12]);
-    	$year             = limpiar($data[13]);
-    	$nroparte         = limpiar($data[14]);
-    	$lote             = limpiar($data[15]);
-    	$peso             = limpiar($data[16]);
-    	$preciocompra     = limpiar($data[17]);
-    	$precioxmayor     = limpiar($data[18]);
-    	$precioxmenor     = limpiar($data[19]);
-    	$precioxpublico   = limpiar($data[20]);
-    	$existencia       = limpiar($data[21]);
-    	$stockoptimo      = limpiar($data[22]);
-    	$stockmedio       = limpiar($data[23]);
-    	$stockminimo      = limpiar($data[24]);
-    	$ivaproducto      = limpiar($data[25]);
-    	$descproducto     = limpiar($data[26]);
-    	$codigobarra      = utf8_encode($data[27]);
-    	$fechaelaboracion = limpiar($data[28]);
-    	$fechaoptimo      = limpiar($data[29]);
-    	$fechamedio       = limpiar($data[30]);
-    	$fechaminimo      = limpiar($data[31]);
-    	$codproveedor     = limpiar($data[32]);
-    	$stockteorico     = limpiar("0");
-    	$motivoajuste     = limpiar("NINGUNO");
-    	$codsucursal      = limpiar(decrypt($_POST["codsucursal"]));
-    	$stmt->execute();
+    // ========== PLANTILLA SIMPLIFICADA ==========
+    // Columnas: CODIGO;NOMBRE;DESCRIPCION;COD_FAMILIA;COD_MARCA;PRECIO_COMPRA;PRECIO_VENTA;EXISTENCIA;COD_IVA;USA_INVENTARIO;TIPO_COMISION;COMISION_VENTA
+    
+    $codproducto      = limpiar($data[0]);
+    $producto         = utf8_encode($data[1]);
+    $descripcion      = utf8_encode($data[2]);
+    $codfamilia       = limpiar($data[3]);
+    $codmarca         = limpiar($data[4] == '' ? "0" : $data[4]);
+    $preciocompra     = limpiar($data[5] == '' ? "0.00" : $data[5]);
+    $precioxpublico   = limpiar($data[6] == '' ? "0.00" : $data[6]);
+    $existencia       = limpiar($data[7] == '' ? "0" : $data[7]);
+    $ivaproducto      = limpiar($data[8] == '' ? "0" : $data[8]);
+    $usa_inventario   = limpiar(strtoupper($data[9]) == 'NO' ? "NO" : "SI");
+    $tipo_comision    = limpiar(strtoupper($data[10]));
+    $comision_venta   = limpiar($data[11] == '' ? "0.00" : $data[11]);
+    
+    // Validar tipo_comision
+    if (!in_array($tipo_comision, ['NINGUNA', 'PORCENTAJE', 'VALOR'])) {
+        $tipo_comision = 'NINGUNA';
+        $comision_venta = '0.00';
+    }
+    
+    // Valores por defecto para campos no incluidos en plantilla simplificada
+    $imei             = "";
+    $condicion        = "NUEVO";
+    $fabricante       = "";
+    $codsubfamilia    = "0";
+    $codmodelo        = "0";
+    $codpresentacion  = "0";
+    $codcolor         = "0";
+    $codorigen        = "0";
+    $year             = "0";
+    $nroparte         = "0";
+    $lote             = "0";
+    $peso             = "0";
+    $precioxmayor     = $precioxpublico;
+    $precioxmenor     = $precioxpublico;
+    $stockoptimo      = "0.00";
+    $stockmedio       = "0.00";
+    $stockminimo      = "0.00";
+    $descproducto     = "0.00";
+    $codigobarra      = $codproducto;
+    $fechaelaboracion = "0000-00-00";
+    $fechaoptimo      = "0000-00-00";
+    $fechamedio       = "0000-00-00";
+    $fechaminimo      = "0000-00-00";
+    $codproveedor     = "0";
+    $stockteorico     = "0";
+    $motivoajuste     = "NINGUNO";
+    $codsucursal      = limpiar(decrypt($_POST["codsucursal"]));
+    $tipo_producto    = "SIMPLE";
+    $producto_padre_id = null;
+    $cantidad_conversion = "1.00";
+    
+    // Si es servicio, existencia debe ser 0
+    if ($usa_inventario == 'NO') {
+        $existencia = "0";
+    }
 
-    	##################### REGISTRAMOS LOS DATOS DE PRODUCTOS EN KARDEX #####################
-		$query = "INSERT INTO kardex values (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
-		$stmt = $this->dbh->prepare($query);
-		$stmt->bindParam(1, $codproceso);
-		$stmt->bindParam(2, $codresponsable);
-		$stmt->bindParam(3, $codproducto);
-		$stmt->bindParam(4, $movimiento);
-		$stmt->bindParam(5, $entradas);
-		$stmt->bindParam(6, $salidas);
-		$stmt->bindParam(7, $devolucion);
-		$stmt->bindParam(8, $stockactual);
-		$stmt->bindParam(9, $ivaproducto);
-		$stmt->bindParam(10, $descproducto);
-		$stmt->bindParam(11, $precio);
-		$stmt->bindParam(12, $documento);
-		$stmt->bindParam(13, $fechakardex);
-		$stmt->bindParam(14, $tipokardex);
-		$stmt->bindParam(15, $procedimiento);
-		$stmt->bindParam(16, $codsucursal);
-		$stmt->bindParam(17, $codigo);
-		
-		$codproceso     = limpiar($data[0]);
-		$codresponsable = limpiar("0");
-		$codproducto    = limpiar($data[0]);
-		$movimiento     = limpiar("ENTRADAS");
-		$entradas       = limpiar($data[21]);
-		$salidas        = limpiar("0.00");
-		$devolucion     = limpiar("0.00");
-		$stockactual    = limpiar($data[21]);
-		$ivaproducto    = limpiar($data[25] == '0' ? "EXENTO" : $nomimpuesto." (".$valorimpuesto." %)");
-		$descproducto   = limpiar($data[26]);
-		$precio         = limpiar("0.00");
-		$documento      = limpiar("INVENTARIO INICIAL");
-		$fechakardex    = limpiar(date("Y-m-d H:i:s"));
-		$tipokardex     = limpiar("1");
-		$procedimiento  = limpiar("1");
-    	$codsucursal    = limpiar(decrypt($_POST["codsucursal"]));
-    	$codigo         = limpiar($_SESSION["codigo"]);
-		$stmt->execute();
-		##################### REGISTRAMOS LOS DATOS DE PRODUCTOS EN KARDEX #####################
+    // INSERT con todos los campos de la tabla productos (42 campos)
+    $query = "INSERT INTO productos values (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+    $stmt = $this->dbh->prepare($query);
+    $stmt->bindParam(1, $codproducto);
+    $stmt->bindParam(2, $producto);
+    $stmt->bindParam(3, $descripcion);
+    $stmt->bindParam(4, $imei);
+    $stmt->bindParam(5, $condicion);
+    $stmt->bindParam(6, $fabricante);
+    $stmt->bindParam(7, $codfamilia);
+    $stmt->bindParam(8, $codsubfamilia);
+    $stmt->bindParam(9, $codmarca);
+    $stmt->bindParam(10, $codmodelo);
+    $stmt->bindParam(11, $codpresentacion);
+    $stmt->bindParam(12, $codcolor);
+    $stmt->bindParam(13, $codorigen);
+    $stmt->bindParam(14, $year);
+    $stmt->bindParam(15, $nroparte);
+    $stmt->bindParam(16, $lote);
+    $stmt->bindParam(17, $peso);
+    $stmt->bindParam(18, $preciocompra);
+    $stmt->bindParam(19, $precioxmayor);
+    $stmt->bindParam(20, $precioxmenor);
+    $stmt->bindParam(21, $precioxpublico);
+    $stmt->bindParam(22, $existencia);
+    $stmt->bindParam(23, $stockoptimo);
+    $stmt->bindParam(24, $stockmedio);
+    $stmt->bindParam(25, $stockminimo);
+    $stmt->bindParam(26, $ivaproducto);
+    $stmt->bindParam(27, $descproducto);
+    $stmt->bindParam(28, $tipo_comision);
+    $stmt->bindParam(29, $comision_venta);
+    $stmt->bindParam(30, $codigobarra);
+    $stmt->bindParam(31, $fechaelaboracion);
+    $stmt->bindParam(32, $fechaoptimo);
+    $stmt->bindParam(33, $fechamedio);
+    $stmt->bindParam(34, $fechaminimo);
+    $stmt->bindParam(35, $codproveedor);
+    $stmt->bindParam(36, $stockteorico);
+    $stmt->bindParam(37, $motivoajuste);
+    $stmt->bindParam(38, $codsucursal);
+    $stmt->bindParam(39, $tipo_producto);
+    $stmt->bindValue(40, $producto_padre_id, PDO::PARAM_NULL);
+    $stmt->bindParam(41, $cantidad_conversion);
+    $stmt->bindParam(42, $usa_inventario);
+    $stmt->execute();
+
+    // Solo registrar kardex si usa inventario y tiene existencia
+    if ($usa_inventario == 'SI' && floatval($existencia) > 0) {
+        $query = "INSERT INTO kardex values (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        $stmt = $this->dbh->prepare($query);
+        $stmt->bindParam(1, $codproceso);
+        $stmt->bindParam(2, $codresponsable);
+        $stmt->bindParam(3, $codproductoK);
+        $stmt->bindParam(4, $movimiento);
+        $stmt->bindParam(5, $entradas);
+        $stmt->bindParam(6, $salidas);
+        $stmt->bindParam(7, $devolucion);
+        $stmt->bindParam(8, $stockactual);
+        $stmt->bindParam(9, $ivaproductoK);
+        $stmt->bindParam(10, $descproductoK);
+        $stmt->bindParam(11, $precio);
+        $stmt->bindParam(12, $documento);
+        $stmt->bindParam(13, $fechakardex);
+        $stmt->bindParam(14, $tipokardex);
+        $stmt->bindParam(15, $procedimiento);
+        $stmt->bindParam(16, $codsucursalK);
+        $stmt->bindParam(17, $codigo);
+        
+        $codproceso     = $codproducto;
+        $codresponsable = "0";
+        $codproductoK   = $codproducto;
+        $movimiento     = "ENTRADAS";
+        $entradas       = $existencia;
+        $salidas        = "0.00";
+        $devolucion     = "0.00";
+        $stockactual    = $existencia;
+        $ivaproductoK   = ($ivaproducto == '0' ? "EXENTO" : $nomimpuesto." (".$valorimpuesto." %)");
+        $descproductoK  = "0.00";
+        $precio         = "0.00";
+        $documento      = "INVENTARIO INICIAL (CARGA MASIVA)";
+        $fechakardex    = date("Y-m-d H:i:s");
+        $tipokardex     = "1";
+        $procedimiento  = "1";
+        $codsucursalK   = $codsucursal;
+        $codigo         = $_SESSION["codigo"];
+        $stmt->execute();
+    }
    }
            
    $this->dbh->commit();
-   //cerramos la lectura del archivo "abrir archivo" con un "cerrar archivo"
    fclose($handle);
 	        
-	echo "<span class='fa fa-check-square-o'></span> LA CARGA MASIVA DE PRODUCTOS FUE REALIZADA EXITOSAMENTE";
-	exit;
+   echo "<span class='fa fa-check-square-o'></span> LA CARGA MASIVA DE PRODUCTOS FUE REALIZADA EXITOSAMENTE";
+   exit;
              
     }
     else
     {
-    //si aparece esto es posible que el archivo no tenga el formato adecuado, inclusive cuando es cvs, revisarlo para ver si esta separado por " , "
         echo "2";
 		exit;
     }  
