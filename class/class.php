@@ -8863,18 +8863,27 @@ public function CargarProductos()
     // ========== PLANTILLA SIMPLIFICADA ==========
     // Columnas: CODIGO;NOMBRE;DESCRIPCION;COD_FAMILIA;COD_MARCA;PRECIO_COMPRA;PRECIO_VENTA;EXISTENCIA;COD_IVA;USA_INVENTARIO;TIPO_COMISION;COMISION_VENTA
     
+    // Función para convertir decimales con coma a punto
+    $convertirDecimal = function($valor) {
+        $valor = trim($valor);
+        if ($valor == '') return "0.00";
+        // Reemplazar coma por punto para decimales
+        $valor = str_replace(',', '.', $valor);
+        return $valor;
+    };
+    
     $codproducto      = limpiar($data[0]);
     $producto         = utf8_encode($data[1]);
     $descripcion      = utf8_encode($data[2]);
     $codfamilia       = limpiar($data[3]);
     $codmarca         = limpiar($data[4] == '' ? "0" : $data[4]);
-    $preciocompra     = limpiar($data[5] == '' ? "0.00" : $data[5]);
-    $precioxpublico   = limpiar($data[6] == '' ? "0.00" : $data[6]);
-    $existencia       = limpiar($data[7] == '' ? "0" : $data[7]);
+    $preciocompra     = limpiar($convertirDecimal($data[5]));
+    $precioxpublico   = limpiar($convertirDecimal($data[6]));
+    $existencia       = limpiar($convertirDecimal($data[7]));
     $ivaproducto      = limpiar($data[8] == '' ? "0" : $data[8]);
-    $usa_inventario   = limpiar(strtoupper($data[9]) == 'NO' ? "NO" : "SI");
-    $tipo_comision    = limpiar(strtoupper($data[10]));
-    $comision_venta   = limpiar($data[11] == '' ? "0.00" : $data[11]);
+    $usa_inventario   = limpiar(strtoupper(trim($data[9])) == 'NO' ? "NO" : "SI");
+    $tipo_comision    = limpiar(strtoupper(trim($data[10])));
+    $comision_venta   = limpiar($convertirDecimal($data[11]));
     
     // Validar tipo_comision
     if (!in_array($tipo_comision, ['NINGUNA', 'PORCENTAJE', 'VALOR'])) {
