@@ -8861,7 +8861,7 @@ public function CargarProductos()
     }
 
     // ========== PLANTILLA SIMPLIFICADA ==========
-    // Columnas: CODIGO;NOMBRE;DESCRIPCION;COD_FAMILIA;COD_MARCA;PRECIO_COMPRA;PRECIO_VENTA;EXISTENCIA;COD_IVA;USA_INVENTARIO;TIPO_COMISION;COMISION_VENTA
+    // Columnas: CODIGO;NOMBRE;DESCRIPCION;COD_FAMILIA;COD_MARCA;PRECIO_COMPRA;PRECIO_VENTA;EXISTENCIA;COD_IVA;USA_INVENTARIO;TIPO_COMISION;COMISION_VENTA;CODIGO_BARRAS
     
     // Función para convertir decimales con coma a punto
     $convertirDecimal = function($valor) {
@@ -8884,6 +8884,8 @@ public function CargarProductos()
     $usa_inventario   = limpiar(strtoupper(trim($data[9])) == 'NO' ? "NO" : "SI");
     $tipo_comision    = limpiar(strtoupper(trim($data[10])));
     $comision_venta   = limpiar($convertirDecimal($data[11]));
+    // Columna 13: CODIGO_BARRAS (opcional, si no viene usa el código del producto)
+    $codigobarra      = isset($data[12]) && trim($data[12]) != '' ? limpiar($data[12]) : $codproducto;
     
     // Validar tipo_comision
     if (!in_array($tipo_comision, ['NINGUNA', 'PORCENTAJE', 'VALOR'])) {
@@ -8910,7 +8912,6 @@ public function CargarProductos()
     $stockmedio       = "0.00";
     $stockminimo      = "0.00";
     $descproducto     = "0.00";
-    $codigobarra      = $codproducto;
     $fechaelaboracion = "0000-00-00";
     $fechaoptimo      = "0000-00-00";
     $fechamedio       = "0000-00-00";
