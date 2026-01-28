@@ -8875,7 +8875,7 @@ public function CargarProductos()
     $codproducto      = limpiar($data[0]);
     $producto         = utf8_encode($data[1]);
     $descripcion      = utf8_encode($data[2]);
-    $codfamilia       = limpiar($data[3]);
+    $codfamilia       = limpiar($data[3] == '' ? "1" : $data[3]);
     $codmarca         = limpiar($data[4] == '' ? "0" : $data[4]);
     $preciocompra     = limpiar($convertirDecimal($data[5]));
     $precioxpublico   = limpiar($convertirDecimal($data[6]));
