@@ -198,26 +198,7 @@ elseif(isset($_POST["proceso"]) and $_POST["proceso"]=="saveajustestock")
                                 </span>
                                 <a href="#" class="input-group-addon btn btn-dark fileinput-exists" data-dismiss="fileinput"><i class="fa fa-trash-o"></i> Quitar</a>
                                 </div>
-                                <div class="alert alert-info mt-2">
-                                    <strong><i class="fa fa-info-circle"></i> Plantilla Simplificada (12 columnas):</strong><br>
-                                    <small>
-                                    <code>CODIGO;NOMBRE;DESCRIPCION;COD_FAMILIA;COD_MARCA;PRECIO_COMPRA;PRECIO_VENTA;EXISTENCIA;COD_IVA;USA_INVENTARIO;TIPO_COMISION;COMISION_VENTA</code><br><br>
-                                    <strong>Campos:</strong><br>
-                                    • <strong>CODIGO:</strong> Código único del producto<br>
-                                    • <strong>NOMBRE:</strong> Nombre del producto<br>
-                                    • <strong>DESCRIPCION:</strong> Descripción (puede estar vacío)<br>
-                                    • <strong>COD_FAMILIA:</strong> ID de la familia (número)<br>
-                                    • <strong>COD_MARCA:</strong> ID de la marca (0 si no aplica)<br>
-                                    • <strong>PRECIO_COMPRA:</strong> Precio de compra (ej: 10.00)<br>
-                                    • <strong>PRECIO_VENTA:</strong> Precio de venta al público<br>
-                                    • <strong>EXISTENCIA:</strong> Cantidad inicial (0 para servicios)<br>
-                                    • <strong>COD_IVA:</strong> ID del impuesto (0 = exento)<br>
-                                    • <strong>USA_INVENTARIO:</strong> SI o NO (NO = servicio)<br>
-                                    • <strong>TIPO_COMISION:</strong> NINGUNA, PORCENTAJE o VALOR<br>
-                                    • <strong>COMISION_VENTA:</strong> Valor de comisión (ej: 5.00)
-                                    </small>
-                                </div>
-                                <a href="bd-sql/plantilla_productos_simplificada.csv" class="btn btn-sm btn-success mt-2" download><i class="fa fa-download"></i> Descargar Plantilla de Ejemplo</a>
+                                <small class="text-muted">Archivo CSV delimitado por punto y coma (;) con 12 columnas. Click en "Ver Detalles" para más información.</small>
                                 <div id="divproducto"></div>   
                                 </div>
                             </div>
@@ -228,6 +209,7 @@ elseif(isset($_POST["proceso"]) and $_POST["proceso"]=="saveajustestock")
             </div>
 
             <div class="modal-footer">
+                <a href="bd-sql/plantilla_productos_simplificada.csv" class="btn btn-success" download><span class="fa fa-download"></span> Descargar Plantilla</a>
                 <button type="button" onClick="CargaDivProductos()" class="btn btn-info"><span class="fa fa-eye"></span> Ver Detalles</button>
                 <button type="submit" name="btn-cargar" id="btn-cargar" class="btn btn-danger"><span class="fa fa-cloud-upload"></span> Cargar</button>
                 <button type="button" onClick="ModalProducto()" class="btn btn-dark" data-dismiss="modal"><span class="fa fa-times-circle"></span> Cerrar</button>

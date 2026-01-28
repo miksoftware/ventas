@@ -1500,47 +1500,47 @@ if (isset($_GET['BuscaDivProducto'])) {
   ?>
 <div class="row">
       <div class="col-md-12">
-<font color="red"> Para poder realizar la Carga Masiva de Productos, el archivo Excel, debe estar estructurado de 33 columnas, la cuales tendrán las siguientes especificaciones:</font><br><br>
+<div class="alert alert-warning">
+<strong><i class="fa fa-info-circle"></i> PLANTILLA SIMPLIFICADA (12 columnas)</strong>
+</div>
 
-  1. Código de Producto (Ejem. 0001).<br>
-  2. Nombre de Producto.<br>
-  3. Descripción de Producto.<br>
-  4. Nº de Imei.<br>
-  5. Condición de Producto.<br>
-  6. Nombre de Fabricante (En caso de no tener colocar Cero).<br>
-  7. Familia de Producto. (Deberá ingresar el Nº de Familia a la que corresponde o colocar Cero).<br>
-  8. Subfamilia de Producto. (Deberá ingresar el Nº de Subfamilia a la que corresponde o colocar Cero)<br>
-  9. Marca de Producto (Deberá ingresar el Nº de Marca a la que corresponde o colocar Cero)<br>
-  10. Modelo de Producto (Deberá ingresar el Nº de Modelo a la que corresponde o colocar Cero)<br>
-  11. Presentación (Deberá ingresar el Nº de Presentación a la que corresponde o colocar Cero)<br>
-  12. Color de Producto (Deberá ingresar el Nº de Color a la que corresponde o colocar Cero).<br>
-  13. Origen de Producto (Deberá ingresar el Nº de Origen a la que corresponde o colocar Cero).<br>
-  14. Año de Producto (En caso de ser algun Producto de Año de Fabricación).<br>
-  15. Nº de Parte de Producto (En caso de no tener colocar Cero).<br>
-  16. Lote de Producto (En caso de no tener colocar Cero).<br>
-  17. Peso de Producto (En caso de no tener colocar Cero).<br>
-  18. Precio Compra. (Numeros con 2 decimales).<br>
-  19. Precio Venta Menor. (Numeros con 2 decimales).<br>
-  20. Precio Venta Mayor. (Numeros con 2 decimales).<br>
-  21. Precio Venta Público. (Numeros con 2 decimales).<br>
-  22. Existencia. (Debe de ser solo enteros).<br>
-  23. Stock Óptimo. (Debe de ser solo enteros).<br>
-  24. Stock Medio. (Debe de ser solo enteros).<br>
-  25. Stock Minimo. (Debe de ser solo enteros).<br>
-  26. <?php echo $NomImpuesto; ?> de Producto. (Ejem. SI o NO).<br>
-  27. Descuento de Producto. (Numeros con 2 decimales).<br>
-  28. Código de Barra. (En caso de no tener colocar Cero).<br>
-  29. Fecha de Elaboración. (Formato: 0000-00-00).<br>
-  30. Fecha de Expiración Óptimo. (Formato: 0000-00-00).<br>
-  31. Fecha de Expiración Medio. (Formato: 0000-00-00).<br>
-  32. Fecha de Expiración Minimo. (Formato: 0000-00-00).<br>
-  33. Proveedor. (Debe de verificar a que codigo pertenece el Proveedor existente).<br><br>
+<p>El archivo CSV debe tener las siguientes columnas separadas por punto y coma (;):</p>
 
-  <font color="red"> NOTA:</font><br>
-  a) Se debe de guardar como archivo .CSV  (delimitado por comas)(*.csv).<br>
-  b) Descargar Plantilla <a class="text-info" href="fotos/productos.csv">AQUI</a>.<br>
-  c) Todos los datos deberán escribirse en mayúscula para mejor orden y visibilidad en los reportes.<br>
-  d) Deben de tener en cuenta que la carga masiva de Productos, deben de ser cargados como se explica, para evitar problemas de datos del productos dentro del Sistema.<br><br>
+<table class="table table-bordered table-sm">
+<thead class="bg-dark text-white">
+<tr>
+<th>#</th>
+<th>Campo</th>
+<th>Descripción</th>
+<th>Ejemplo</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>1</td><td><strong>CODIGO</strong></td><td>Código único del producto</td><td>PROD001</td></tr>
+<tr><td>2</td><td><strong>NOMBRE</strong></td><td>Nombre del producto</td><td>ACETAMINOFEN 500MG</td></tr>
+<tr><td>3</td><td><strong>DESCRIPCION</strong></td><td>Descripción (puede estar vacío)</td><td>TABLETAS X 10</td></tr>
+<tr><td>4</td><td><strong>COD_FAMILIA</strong></td><td>ID de la familia (número)</td><td>1</td></tr>
+<tr><td>5</td><td><strong>COD_MARCA</strong></td><td>ID de la marca (0 si no aplica)</td><td>1</td></tr>
+<tr><td>6</td><td><strong>PRECIO_COMPRA</strong></td><td>Precio de compra</td><td>10.00</td></tr>
+<tr><td>7</td><td><strong>PRECIO_VENTA</strong></td><td>Precio de venta al público</td><td>15.00</td></tr>
+<tr><td>8</td><td><strong>EXISTENCIA</strong></td><td>Cantidad inicial (0 para servicios)</td><td>100</td></tr>
+<tr><td>9</td><td><strong>COD_IVA</strong></td><td>ID del impuesto (0 = exento)</td><td>1</td></tr>
+<tr><td>10</td><td><strong>USA_INVENTARIO</strong></td><td>SI = producto, NO = servicio</td><td>SI</td></tr>
+<tr><td>11</td><td><strong>TIPO_COMISION</strong></td><td>NINGUNA, PORCENTAJE o VALOR</td><td>NINGUNA</td></tr>
+<tr><td>12</td><td><strong>COMISION_VENTA</strong></td><td>Valor de comisión</td><td>0.00</td></tr>
+</tbody>
+</table>
+
+<div class="alert alert-info">
+<strong>Notas importantes:</strong><br>
+• El archivo debe ser CSV delimitado por punto y coma (;)<br>
+• La primera fila debe contener los encabezados<br>
+• Para servicios: USA_INVENTARIO=NO y EXISTENCIA=0<br>
+• Todos los textos en MAYÚSCULAS para mejor visualización
+</div>
+
+<a class="btn btn-success" href="bd-sql/plantilla_productos_simplificada.csv" download><i class="fa fa-download"></i> Descargar Plantilla de Ejemplo</a>
+
     </div>
 </div>                                 
 <?php 
