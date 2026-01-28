@@ -1501,7 +1501,7 @@ if (isset($_GET['BuscaDivProducto'])) {
 <div class="row">
       <div class="col-md-12">
 <div class="alert alert-warning">
-<strong><i class="fa fa-info-circle"></i> PLANTILLA SIMPLIFICADA (12 columnas)</strong>
+<strong><i class="fa fa-info-circle"></i> PLANTILLA SIMPLIFICADA (13 columnas)</strong>
 </div>
 
 <p>El archivo CSV debe tener las siguientes columnas separadas por punto y coma (;):</p>
@@ -1528,6 +1528,7 @@ if (isset($_GET['BuscaDivProducto'])) {
 <tr><td>10</td><td><strong>USA_INVENTARIO</strong></td><td>SI = producto, NO = servicio</td><td>SI</td></tr>
 <tr><td>11</td><td><strong>TIPO_COMISION</strong></td><td>NINGUNA, PORCENTAJE o VALOR</td><td>NINGUNA</td></tr>
 <tr><td>12</td><td><strong>COMISION_VENTA</strong></td><td>Valor de comisión</td><td>0.00</td></tr>
+<tr><td>13</td><td><strong>CODIGO_BARRAS</strong></td><td>Código de barras (opcional, si vacío usa CODIGO)</td><td>7501234567890</td></tr>
 </tbody>
 </table>
 
