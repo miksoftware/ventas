@@ -40486,22 +40486,22 @@ public function BuscarLibroVentasxFechas()
 {
 	self::SetNames();
 	$sql ="SELECT 
-	ventas.idventa, 
-	ventas.codventa,
-	ventas.tipodocumento, 
-	ventas.codfactura, 
-	ventas.codcliente,
+	MAX(ventas.idventa) AS idventa, 
+	MAX(ventas.codventa) AS codventa,
+	MAX(ventas.tipodocumento) AS tipodocumento, 
+	MAX(ventas.codfactura) AS codfactura, 
+	MAX(ventas.codcliente) AS codcliente,
 	SUM(if(ventas.exonerado=2,ventas.subtotal,'0.00')) AS totalexonerado, 
 	SUM(ventas.subtotal) AS subtotal,
 	SUM(if(ventas.exonerado!=2,ventas.subtotalexento,'0.00')) AS subtotalexento, 
 	SUM(if(ventas.exonerado!=2,ventas.subtotaliva,'0.00')) AS subtotaliva, 
 	SUM(if(ventas.exonerado!=2,ventas.totaliva,'0.00')) AS totaliva, 
 	SUM(ventas.descontado) AS descontado, 
-	ventas.descuento, 
-	ventas.totaldescuento, 
+	MAX(ventas.descuento) AS descuento, 
+	SUM(ventas.totaldescuento) AS totaldescuento, 
 	SUM(ventas.totalpago) AS totalpago, 
-	ventas.tipopago, 
-	ventas.fechaventa, 
+	MAX(ventas.tipopago) AS tipopago, 
+	DATE_FORMAT(ventas.fechaventa,'%Y-%m-%d') AS fechaventa, 
     ventas.codsucursal, 
 	sucursales.documsucursal, 
 	sucursales.cuitsucursal, 
@@ -40528,7 +40528,7 @@ public function BuscarLibroVentasxFechas()
 	AND DATE_FORMAT(ventas.fechaventa,'%Y-%m-%d') BETWEEN ? AND ?
 	AND (ventas.tipodocumento != 'NOTA_VENTA_5' or ventas.tipodocumento != 'NOTA_VENTA_8')  
 	AND ventas.statusventa != 'ANULADA' 
-	GROUP BY DATE_FORMAT(ventas.fechaventa,'%Y-%m-%d')";
+	GROUP BY DATE_FORMAT(ventas.fechaventa,'%Y-%m-%d'), ventas.codsucursal, sucursales.documsucursal, sucursales.cuitsucursal, sucursales.nomsucursal, sucursales.documencargado, sucursales.dniencargado, sucursales.nomencargado, sucursales.codmoneda, tiposmoneda.moneda, tiposmoneda.siglas, tiposmoneda.simbolo, documentos.documento, documentos2.documento, provincias.provincia, departamentos.departamento";
 	$stmt = $this->dbh->prepare($sql);
 	$stmt->bindValue(1, trim(decrypt($_GET['codsucursal'])));
 	$stmt->bindValue(2, trim(date("Y-m-d",strtotime($_GET['desde']))));
@@ -40566,15 +40566,15 @@ public function BuscarLibroVentasNCxFechas()
 	SUM(if(notascredito.exonerado!=2,notascredito.subtotaliva,'0.00')) AS subtotalivanc, 
 	SUM(if(notascredito.exonerado!=2,notascredito.totaliva,'0.00')) AS totalivanc, 
 	SUM(notascredito.descontado) AS descontadonc,
-	notascredito.descuento, 
-	notascredito.totaldescuento, 
+	MAX(notascredito.descuento) AS descuento, 
+	SUM(notascredito.totaldescuento) AS totaldescuento, 
 	SUM(notascredito.totalpago) AS totalpagonc, 
-	notascredito.fechanota, 
+	DATE_FORMAT(notascredito.fechanota,'%Y-%m-%d') AS fechanota, 
     notascredito.codsucursal
     FROM notascredito WHERE notascredito.codsucursal = ?
 	AND DATE_FORMAT(notascredito.fechanota,'%Y-%m-%d') BETWEEN ? AND ?
 	AND notascredito.tipodocumento != 'NOTA DE VENTA'  
-	GROUP BY DATE_FORMAT(notascredito.fechanota,'%Y-%m-%d')";
+	GROUP BY DATE_FORMAT(notascredito.fechanota,'%Y-%m-%d'), notascredito.codsucursal";
 	$stmt = $this->dbh->prepare($sql);
 	$stmt->bindValue(1, trim(decrypt($_GET['codsucursal'])));
 	$stmt->bindValue(2, trim(date("Y-m-d",strtotime($_GET['desde']))));
@@ -40605,16 +40605,17 @@ public function BuscarLibroVentasNCxFechas2()
 	SUM(if(ventas.exonerado!=2,ventas.subtotaliva,'0.00')) AS subtotalivanc, 
 	SUM(if(ventas.exonerado!=2,ventas.totaliva,'0.00')) AS totalivanc, 
 	SUM(ventas.descontado) AS descontadonc,
-	ventas.descuento, 
-	ventas.totaldescuento, 
+	MAX(ventas.descuento) AS descuento, 
+	SUM(ventas.totaldescuento) AS totaldescuento, 
 	SUM(ventas.totalpago) AS totalpagonc, 
-	ventas.fechaventa, 
+	ventas.statusventa,
+	DATE_FORMAT(ventas.fechaventa,'%Y-%m-%d') AS fechaventa, 
     ventas.codsucursal
     FROM ventas WHERE ventas.codsucursal = ?
 	AND DATE_FORMAT(ventas.fechaventa,'%Y-%m-%d') BETWEEN ? AND ?
 	AND (ventas.tipodocumento != 'NOTA_VENTA_5' or ventas.tipodocumento != 'NOTA_VENTA_8')  
 	AND ventas.notacredito = 1 
-	GROUP BY ventas.statusventa";
+	GROUP BY ventas.statusventa, ventas.codsucursal";
 	$stmt = $this->dbh->prepare($sql);
 	$stmt->bindValue(1, trim(decrypt($_GET['codsucursal'])));
 	$stmt->bindValue(2, trim(date("Y-m-d",strtotime($_GET['desde']))));
