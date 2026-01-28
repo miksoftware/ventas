@@ -8919,8 +8919,28 @@ public function CargarProductos()
         $existencia = "0";
     }
 
-    // INSERT con todos los campos de la tabla productos (42 campos)
-    $query = "INSERT INTO productos values (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+    // INSERT con nombres de columnas explícitos para evitar problemas de orden
+    $query = "INSERT INTO productos (
+        codproducto, producto, descripcion, imei, condicion, fabricante,
+        codfamilia, codsubfamilia, codmarca, codmodelo, codpresentacion, codcolor,
+        codorigen, year, nroparte, lote, peso,
+        preciocompra, precioxmayor, precioxmenor, precioxpublico,
+        existencia, stockoptimo, stockmedio, stockminimo,
+        ivaproducto, descproducto, tipo_comision, comision_venta,
+        codigobarra, fechaelaboracion, fechaoptimo, fechamedio, fechaminimo,
+        codproveedor, stockteorico, motivoajuste, codsucursal,
+        tipo_producto, producto_padre_id, cantidad_conversion, usa_inventario
+    ) VALUES (
+        ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?,
+        ?, ?, ?, ?,
+        ?, ?, ?, ?,
+        ?, ?, ?, ?,
+        ?, ?, ?, ?, ?,
+        ?, ?, ?, ?,
+        ?, ?, ?, ?
+    )";
     $stmt = $this->dbh->prepare($query);
     $stmt->bindParam(1, $codproducto);
     $stmt->bindParam(2, $producto);
