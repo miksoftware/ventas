@@ -13494,7 +13494,42 @@ public function BuscarProductosVendidosxFechas()
 	WHERE ventas.codsucursal = ? 
 	AND DATE_FORMAT(ventas.fechaventa,'%Y-%m-%d') BETWEEN ? AND ?
 	AND detalleventas.tipodetalle = 1 
-	GROUP BY detalleventas.codproducto, detalleventas.precioventa, detalleventas.descproducto, detalleventas.codsucursal 
+	GROUP BY 
+		detalleventas.idproducto,
+		detalleventas.codproducto,
+		detalleventas.producto,
+		detalleventas.descripcion,
+		detalleventas.imei,
+		detalleventas.condicion,
+		detalleventas.codmarca,
+		detalleventas.codmodelo,
+		detalleventas.codpresentacion,
+		detalleventas.codcolor,
+		detalleventas.preciocompra,
+		detalleventas.precioventa,
+		detalleventas.posicionimpuesto,
+		detalleventas.tipoimpuesto,
+		detalleventas.ivaproducto,
+		detalleventas.descproducto,
+		detalleventas.tipodetalle,
+		marcas.nommarca,
+		modelos.nommodelo,
+		presentaciones.nompresentacion,
+		colores.nomcolor,
+		sucursales.cuitsucursal,
+		sucursales.nomsucursal,
+		sucursales.nomencargado,
+		sucursales.codmoneda,
+		sucursales.codmoneda2,
+		documentos.documento,
+		documento2,
+		tiposmoneda.moneda,
+		tiposmoneda.siglas,
+		tiposmoneda.simbolo,
+		moneda2,
+		siglas2,
+		simbolo2,
+		valor_cambio.montocambio
 	ORDER BY detalleventas.codproducto ASC";
 	$stmt = $this->dbh->prepare($sql);
 	$stmt->bindValue(1, trim(decrypt($_GET['codsucursal'])));
