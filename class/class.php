@@ -36967,10 +36967,9 @@ public function VentasPorId()
 	   (SELECT
 	   mediospagoxventas.codventa,
 	   GROUP_CONCAT(mediospagos.mediopago SEPARATOR ' / ') AS detalles_medios, 
-	   GROUP_CONCAT(mediospagoxventas.codmediopago, '|', mediospagos.mediopago, '|',mediospagoxventas.montopagado, '|', mediospagoxventas.montodevuelto SEPARATOR '<br>') AS detalles_pagos
+	   GROUP_CONCAT(mediospagoxventas.codmediopago, '|', mediospagos.mediopago, '|',mediospagoxventas.montopagado, '|', mediospagoxventas.montodevuelto ORDER BY mediospagoxventas.codmediopago ASC SEPARATOR '<br>') AS detalles_pagos
 	   FROM mediospagoxventas LEFT JOIN mediospagos ON mediospagos.codmediopago = mediospagoxventas.codmediopago
-	   GROUP BY mediospagoxventas.codventa 
-	   ORDER BY mediospagos.codmediopago ASC) pagos ON ventas.codventa = pagos.codventa
+	   GROUP BY mediospagoxventas.codventa) pagos ON ventas.codventa = pagos.codventa
     
     LEFT JOIN
       (SELECT
