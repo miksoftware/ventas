@@ -9140,12 +9140,12 @@ public function RegistrarProductos()
 		$codfamilia       = limpiar(decrypt($_POST["codfamilia"]));
 		
 		if(limpiar($_POST["modulo"]) == 1){
-		$codsubfamilia    = limpiar($_POST['codsubfamilia'] == '' ? "0" : decrypt($_POST['codsubfamilia']));
-		$codmarca         = limpiar($_POST['codmarca'] == '' ? "0" : decrypt($_POST['codmarca']));
-		$codmodelo        = limpiar($_POST['codmodelo'] == '' ? "0" : decrypt($_POST['codmodelo']));
-		$codpresentacion  = limpiar($_POST['codpresentacion'] == '' ? "0" : decrypt($_POST['codpresentacion']));
-		$codcolor         = limpiar($_POST['codcolor'] == '' ? "0" : decrypt($_POST['codcolor']));
-		$codorigen        = limpiar($_POST['codorigen'] == '' ? "0" : decrypt($_POST['codorigen']));
+		$codsubfamilia    = limpiar(empty($_POST['codsubfamilia']) ? "0" : decrypt($_POST['codsubfamilia']));
+		$codmarca         = limpiar(empty($_POST['codmarca']) ? "0" : decrypt($_POST['codmarca']));
+		$codmodelo        = limpiar(empty($_POST['codmodelo']) ? "0" : decrypt($_POST['codmodelo']));
+		$codpresentacion  = limpiar(empty($_POST['codpresentacion']) ? "0" : decrypt($_POST['codpresentacion']));
+		$codcolor         = limpiar(empty($_POST['codcolor']) ? "0" : decrypt($_POST['codcolor']));
+		$codorigen        = limpiar(empty($_POST['codorigen']) ? "0" : decrypt($_POST['codorigen']));
 		$year             = limpiar($_POST["year"]);
 		$nroparte         = limpiar($_POST["nroparte"]);
 		$lote             = limpiar($_POST['lote'] == '' ? "0" : $_POST['lote']);
@@ -9156,10 +9156,10 @@ public function RegistrarProductos()
 		$fechaminimo      = limpiar($_POST['fechaminimo'] == '' ? "0000-00-00" : date("Y-m-d",strtotime($_POST['fechaminimo'])));
 		} else {
 		$codsubfamilia    = limpiar("0");
-		$codmarca         = limpiar($_POST['codmarca'] == '' ? "0" : decrypt($_POST['codmarca']));
-		$codmodelo        = limpiar($_POST['codmodelo'] == '' ? "0" : decrypt($_POST['codmodelo']));
-		$codpresentacion  = limpiar($_POST['codpresentacion'] == '' ? "0" : decrypt($_POST['codpresentacion']));
-		$codcolor         = limpiar($_POST['codcolor'] == '' ? "0" : decrypt($_POST['codcolor']));	
+		$codmarca         = limpiar(empty($_POST['codmarca']) ? "0" : decrypt($_POST['codmarca']));
+		$codmodelo        = limpiar(empty($_POST['codmodelo']) ? "0" : decrypt($_POST['codmodelo']));
+		$codpresentacion  = limpiar(empty($_POST['codpresentacion']) ? "0" : decrypt($_POST['codpresentacion']));
+		$codcolor         = limpiar(empty($_POST['codcolor']) ? "0" : decrypt($_POST['codcolor']));	
 		$codorigen        = limpiar("0");
 		$year             = limpiar("0");
 		$nroparte         = limpiar("0");
